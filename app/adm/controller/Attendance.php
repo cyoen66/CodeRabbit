@@ -84,7 +84,7 @@ class Attendance extends BaseController
             return table_assign(0, '', $list);
         } else {
             $details = [];
-            $detail = Approve::initSelect($detail);
+            $details = Approve::initSelect($detail);
             View::assign('detail', $detail);
             return view();
         }
