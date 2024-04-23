@@ -17,7 +17,7 @@ use think\exception\ValidateException;
 use think\facade\Db;
 use think\facade\View;
 
-class Attendance extends BaseController
+class attendance extends BaseController
 {
     public function attendance_search()
     {
