@@ -1,0 +1,141 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">メール設定</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-3">SMTPサーバー<font>*</font>
+			</td>
+			<td>
+				<input type="hidden" name="id" value="{$id}">
+				<input type="text" name="smtp" lay-verify="required" autocomplete="off" placeholder="SMTPサーバーアドレスを入力してください"
+					lay-reqText="SMTPサーバーアドレスを入力してください" class="layui-input" {notempty name="$config.smtp" }
+					value="{$config.smtp}" {/notempty} style="width:240px;display: inline-block;">
+				<span
+					style="color:#999; font-size:12px;">例：mail.yfc-oa.jp</span>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">ポート<font>*</font>
+			</td>
+			<td>
+				<input type="text" name="smtp_port" lay-verify="required" autocomplete="off" placeholder="ポート番号を入力してください"
+					lay-reqText="ポート番号を入力してください" class="layui-input" {notempty name="$config.smtp_port" }
+					value="{$config.smtp_port}" {/notempty} style="width:240px;display: inline-block;">
+				<span style="color:#999; font-size:12px;">例：465/994</span>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">送信アカウント<font>*</font>
+			</td>
+			<td>
+				<input type="text" name="smtp_user" autocomplete="off" lay-verify="required" placeholder="送信アカウントを入力してください"
+					lay-reqText="送信アカウントを入力してください" class="layui-input" {notempty name="$config.smtp_user" }
+					value="{$config.smtp_user}" {/notempty} style="width:240px;display: inline-block;">
+				<span style="color:#999; font-size:12px;">例：gougucms@qq.com</span>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">パスワード<font>*</font>
+			</td>
+			<td>
+				<input type="password" name="smtp_pwd" lay-verify="required" autocomplete="off" placeholder="パスワードを入力してください"
+					class="layui-input" {notempty name="$config.smtp_pwd" } value="{$config.smtp_pwd}" {/notempty}
+					style="width:240px;display: inline-block;">
+			</td>
+		</tr>
+
+		<tr>
+			<td class="layui-td-gray">送信者表示名<font>*</font>
+			</td>
+			<td>
+				<input type="text" name="from" autocomplete="off" lay-verify="required" placeholder="送信者の表示名を入力してください"
+					lay-reqText="送信者の表示名を入力してください" class="layui-input" {notempty name="$config.from" } value="{$config.from}"
+					{/notempty} style="width:240px; display: inline-block;">
+				<span style="color:#999; font-size:12px;">例：YFC OA システム管理者</span>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">表示メール<font>*</font>
+			</td>
+			<td>
+				<input type="text" name="email" lay-verify="required" autocomplete="off" placeholder="送信者の表示メールを入力してください"
+					lay-reqText="送信者の表示メールを入力してください" class="layui-input" {notempty name="$config.email" }
+					value="{$config.email}" {/notempty} style="width:240px;display: inline-block;">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">メールテンプレート</td>
+			<td><textarea name="template" placeholder="" class="layui-textarea"
+					id="container">{notempty name="$config.template"}{$config.template}{/notempty}</textarea>
+			</td>
+		</tr>
+	</table>
+	<div class="py-3">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">保存</button>
+		<button lay-event="email" class="layui-btn">テスト送信</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool', 'tinymce'];
+	function gouguInit() {
+		var form = layui.form, tool = layui.tool, tinymce = layui.tinymce;
+
+		var edit = tinymce.render({
+			selector: "#container",
+			height: 320
+		});
+		//监听提交
+		form.on('submit(webform)', function (data) {
+			data.field.template = tinyMCE.editors['container'].getContent();
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose(1000);
+				}
+			}
+			tool.post("/home/conf/edit", data.field, callback);
+			return false;
+		});
+
+		$('body').on('click', '[lay-event="email"]', function () {
+			layer.prompt({
+				formType: 0,
+				value: '',
+				title: '输入接收测试邮件的邮箱',
+				id: 'email_to'
+			}, function (value, index, elem) {
+				var isEmail = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+				if (value.length < 6 || !(isEmail.test(value))) {
+					layer.tips('请正确输入邮箱', elem);
+					return false;
+				}
+				$.ajax({
+					url: "/api/index/email_test",
+					data: { email: value },
+					type: "post",
+					beforeSend: function () {
+						// 禁用按钮防止重复提交
+						$("#email_to input").val('');
+					},
+					success: function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							layer.close(index);
+						}
+					}
+				})
+			});
+			return false;
+		})
+	}
+</script>
+{/block}
+<!-- /脚本 -->

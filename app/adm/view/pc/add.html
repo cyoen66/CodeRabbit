@@ -1,0 +1,315 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">PC追加/変更</h3>
+	{eq name="$id" value="0"}
+	<table class="layui-table">
+		<tr>
+			<td class="layui-td-gray" style="width: 100px;">PC管理番号
+			</td>
+			
+			<td>
+				<input type="text" name="management_number" autocomplete="off" placeholder="PC管理番号" lay-reqText="PC管理番号"
+					class="layui-input" disabled>
+			</td>
+			<td class="layui-td-gray">PC名称<font>*</font>
+			</td>
+			<td>
+				<input type="text" name="name" autocomplete="off" placeholder="PC名称" lay-reqText="PC名称" lay-verify="required"
+					class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">MACアドレス
+			</td>
+			<td>
+				<input type="text" name="mac_address" autocomplete="off" placeholder="MACアドレス" lay-reqText="表示順"
+					class="layui-input">
+			</td>
+			<td class="layui-td-gray-2">シリアル番号</td>
+			<td>
+				<input type="text" name="serial_number" placeholder="シリアル番号" autocomplete="off" class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">種類
+			</td>
+			<td>
+				<input type="text" name="type" autocomplete="off" placeholder="種類" lay-reqText="種類" class="layui-input">
+			</td>
+			<td class="layui-td-gray-2">ステータス<font>*</font></td>
+			<td>
+				<select name="status" lay-verify="required" lay-reqText="ステータスを選択してください">
+					<option value="">ステータスを選択してください</option>
+					<option value="-1" style="color: red;">廃棄</option>
+					<option value="0" style="color: green;">正常</option>
+					<option value="1" style="color: red;">故障</option>
+					<option value="2" style="color: red;">修理</option>
+					<option value="3" style="color: yellow;">整備</option>
+					<option value="4" style="color: yellow;">貸出</option>
+					<option value="5" style="color: green;">返却</option>
+				  </select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">スペック
+			</td>
+			<td>
+				<input type="text" name="specs" autocomplete="off" placeholder="スペック" lay-reqText="表示順"
+					class="layui-input">
+			</td>
+			<td class="layui-td-gray-2">メーカー</td>
+			<td>
+				<input type="text" name="manufacturer" placeholder="メーカー" autocomplete="off" class="layui-input">
+			</td>
+		</tr>
+
+		<tr>
+			<td class="layui-td-gray">金額
+			</td>
+			<td>
+				<input type="text" name="amount" autocomplete="off" placeholder="金額" lay-reqText="表示順"
+					class="layui-input">
+			</td>
+			<td class="layui-td-gray-2">購入日</td>
+			<td>
+				<!-- <input type="text" name="purchase_date" placeholder="購入日" autocomplete="off" class="layui-input"> -->
+				<input id="purchase_date" name="purchase_date" style="display:inline-block;" autocomplete="off"
+					class="layui-input" value="" readonly placeholder="購入日を選択してください"
+					lay-reqText="購入日を選択してください">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">保証終了日
+			</td>
+			<td>
+				<input id="warranty_end_date" name="warranty_end_date" style="display:inline-block;" autocomplete="off"
+					class="layui-input" value="" readonly  placeholder="終了日<を選択してください"
+					lay-reqText="終了日<を選択してください">
+			</td>
+			<td class="layui-td-gray-2">使用者</td>
+			<td>
+				<input type="text" name="user_name"  placeholder="使用者" readonly autocomplete="off" data-event="select"  class="layui-input">
+				<input type="hidden" name="user_id"  placeholder="使用者id" readonly autocomplete="off"  class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">使用開始日
+			</td>
+			<td>
+				<input id="start_date" name="start_date" style="display:inline-block;" autocomplete="off"
+					class="layui-input" value="" readonly placeholder="開始日を選択してください"
+					lay-reqText="開始日を選択してください">
+			</td>
+			<td class="layui-td-gray-2">使用終了日</td>
+			<td>
+				<!-- <input type="text" name="end_date" placeholder="使用終了日" autocomplete="off" class="layui-input"> -->
+				<input id="end_date" name="end_date" style="display:inline-block;" autocomplete="off"
+					class="layui-input" value="" readonly  placeholder="終了日を選択してください"
+					lay-reqText="終了日を選択してください">
+			</td>
+		</tr>
+	</table>
+	{else/}
+	<table class="layui-table">
+		<tr>
+			<td class="layui-td-gray" style="width: 100px;">PC管理番号
+			</td>
+			<td>
+				<input type="text" name="management_number" autocomplete="off" placeholder="PC管理番号" lay-reqText="PC管理番号"
+					class="layui-input" disabled value="{$detail.management_number}">
+			</td>
+			<td class="layui-td-gray">PC名称<font>*</font>
+			</td>
+			<td>
+				<input type="text" name="name" autocomplete="off" placeholder="PC名称" lay-reqText="PC名称" lay-verify="required"
+					class="layui-input" value="{$detail.name}">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">MACアドレス
+			</td>
+			<td>
+				<input type="text" name="mac_address" autocomplete="off" placeholder="MACアドレス" lay-reqText="表示順"
+					class="layui-input" value="{$detail.mac_address}">
+			</td>
+			<td class="layui-td-gray-2">シリアル番号</td>
+			<td>
+				<input type="text" name="serial_number" placeholder="シリアル番号" autocomplete="off" class="layui-input"  
+				value="{$detail.serial_number?$detail.serial_number:''}">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">種類
+			</td>
+			<td>
+				<input type="text" name="type" autocomplete="off" placeholder="種類" lay-reqText="種類" class="layui-input"  value="{$detail.type}">
+			</td>
+			<td class="layui-td-gray-2">ステータス<font>*</font></td>
+			<td>
+				<select name="status" lay-verify="required" lay-reqText="ステータスを選択してください" >
+					<option value="">ステータスを選択してください</option>
+					<option value="-1" {eq name="detail.status" value="-1"} selected{/eq}>廃棄</option>
+					<option value="0"  {eq name="detail.status" value="0"} selected{/eq}>正常</option>
+					<option value="1"  {eq name="detail.status" value="1"} selected{/eq}>故障</option>
+					<option value="2"  {eq name="detail.status" value="2"} selected{/eq}>修理</option>
+					<option value="3"  {eq name="detail.status" value="3"} selected{/eq}>整備</option>
+					<option value="4"  {eq name="detail.status" value="4"} selected{/eq}>貸出</option>
+					<option value="5"  {eq name="detail.status" value="5"} selected{/eq}>返却</option>
+				  </select>
+				<!-- <input type="text" name="status" placeholder="ステータス" autocomplete="off" class="layui-input"> -->
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">スペック
+			</td>
+			<td>
+				<input type="text" name="specs" autocomplete="off" placeholder="スペック" lay-reqText="表示順"
+					class="layui-input" value="{$detail.specs}">
+			</td>
+			<td class="layui-td-gray-2">メーカー</td>
+			<td>
+				<input type="text" name="manufacturer" placeholder="メーカー" autocomplete="off" class="layui-input"  value="{$detail.manufacturer}">
+			</td>
+		</tr>
+
+		<tr>
+			<td class="layui-td-gray">金額
+			</td>
+			<td>
+				<input type="text" name="amount" autocomplete="off" placeholder="金額" lay-reqText="表示順"
+					class="layui-input" value="{$detail.amount}">
+			</td>
+			<td class="layui-td-gray-2">購入日</td>
+			<td>
+				<!-- <input type="text" name="purchase_date" placeholder="購入日" autocomplete="off" class="layui-input"> -->
+				<input id="purchase_date" name="purchase_date" style="display:inline-block;" autocomplete="off"
+					class="layui-input" readonly  placeholder="購入日を選択してください"
+					lay-reqText="購入日を選択してください" value="{$detail.purchase_date?: ''}">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">保証終了日
+			</td>
+			<td>
+				<input id="warranty_end_date" name="warranty_end_date" style="display:inline-block;" autocomplete="off"
+					class="layui-input" readonly  placeholder="終了日<を選択してください"
+					lay-reqText="終了日<を選択してください" value="{$detail.warranty_end_date?: '' }">
+			</td>
+			<td class="layui-td-gray-2">使用者</td>
+			<td>
+				<input type="text" name="user_name"  placeholder="使用者" readonly autocomplete="off" data-event="select"  class="layui-input" value="{$detail.user_name?: ''}">
+				<input type="hidden" name="user_id"  placeholder="使用者id" readonly autocomplete="off"  class="layui-input"  value="{$detail.user_id?: ''}">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">使用開始日
+			</td>
+			<td>
+				<input id="start_date" name="start_date" style="display:inline-block;" autocomplete="off"
+					class="layui-input" readonly  placeholder="開始日を選択してください"
+					lay-reqText="開始日を選択してください"  value="{$detail.start_date ?: ''}">
+			</td>
+			<td class="layui-td-gray-2">使用終了日</td>
+			<td>
+				<!-- <input type="text" name="end_date" placeholder="使用終了日" autocomplete="off" class="layui-input"> -->
+				<input id="end_date" name="end_date" style="display:inline-block;" autocomplete="off"
+					class="layui-input" readonly  placeholder="終了日を選択してください"
+					lay-reqText="終了日を選択してください"  value="{$detail.end_date?: ''}">
+			</td>
+		</tr>
+	</table>
+	{/eq}
+	<div class="py-3">
+		<input type="hidden" name="id" value="{$id}">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool','employeepicker'];
+
+
+	function gouguInit() {
+		var form = layui.form, tool = layui.tool,employeepicker = layui.employeepicker;
+		var laydate = layui.laydate;
+
+		// 选择员工
+		$('body').on('click','[data-event="select"]',function(){
+			var that = $(this);
+			var names = that.val(), ids = $('[name="uid"]').val();
+			employeepicker.init({
+				ids: ids,
+				names: names,
+				type: 0,
+				department_url: "/api/index/get_department_tree",
+				employee_url: "/api/index/get_employee",
+				callback: function (ids, names, dids, departments) {
+					uid = ids;
+					that.val(names);
+					$('[name="user_id"]').val(ids);
+					//calendar.refetchEvents({
+					//	url: '/oa/plan/index?uid='+uid
+					//});
+				}
+			})
+		});
+		console.log(laydate);
+		laydate.render({
+			elem: '#purchase_date',
+			type: 'date',
+			format: 'yyyy-MM-dd',
+			showBottom: false,
+			lang: 'ja',
+			done: function (a, b, c) {
+				// detail.start_time_a = a;
+			}
+		});
+		laydate.render({
+			elem: '#warranty_end_date',
+			type: 'date',
+			format: 'yyyy-MM-dd',
+			showBottom: false,
+			done: function (a, b, c) {
+				// detail.start_time_a = a;
+			}
+		});
+		laydate.render({
+			elem: '#start_date',
+			type: 'date',
+			format: 'yyyy-MM-dd',
+			showBottom: false,
+			done: function (a, b, c) {
+				// detail.start_time_a = a;
+			}
+		});
+		laydate.render({
+			elem: '#end_date',
+			type: 'date',
+			format: 'yyyy-MM-dd',
+			showBottom: false,
+			done: function (a, b, c) {
+				// detail.start_time_a = a;
+			}
+		});
+		//监听提交
+		form.on('submit(webform)', function (data) {
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose(1000);
+				}
+			}
+			tool.post("/adm/pc/add", data.field, callback);
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

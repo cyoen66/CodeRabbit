@@ -1,0 +1,154 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<div class="gg-form-bar border-t border-x" style="background-color:#FAFAFA">
+		<h3>データリストア</h3>
+	</div>
+	<table cellspacing="0" cellpadding="0" border="0" class="layui-table layui-table-form">
+		<tr>
+			<th style=" text-align: center; font-weight: 800;"><span>ファイル名</span></th>
+			<th style=" text-align: center; font-weight: 800;"><span>ファイル形式</span></th>
+			<th style=" text-align: center; font-weight: 800;"><span>デリミタ</span></th>
+			<th style=" text-align: center; font-weight: 800;"><span>ファイル合計サイズ</span></th>
+			<th style=" text-align: center; font-weight: 800;"><span>分割ファイル数</span></th>
+			<th style=" text-align: center; font-weight: 800; width:222px"><span>操作</span></th>
+		</tr>
+		{empty name="list"}
+		<tr>
+			<td colspan="6" align="center">バックアップデータがありません</td>
+		</tr>
+		{/empty}
+		{volist name="list" id="vo" key="k"}
+		<tr style="background-color: #fafafa;">
+			<td><strong>バックアップ時間：{$vo.time}</strong>{if $vo.timespan == $lock_time}<span
+					style="color:red; margin-left:20px;">このバックアップは完全ではありません。削除して再度バックアップしてください。</span>{/if}</td>
+			<td align="center"><span>.sql</span></td>
+			<td align="center"><span>{$vo.data.compress}</span></td>
+			<td align="center"><span>{:format_bytes($vo.data.size)}</span></td>
+			<td align="center"><span>{$vo.data.part}</span></td>
+			<td align="center">
+				<div class="layui-btn-group" data-time='{$vo.timespan}'>
+					{if $vo.timespan == $lock_time}
+					<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="reset">不完全なバックアップをクリア</a>
+					{else/}
+					<a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="import">データリストア</a>
+					<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">バックアップを削除</a>
+					{/if}
+				</div>
+			</td>
+		</tr>
+		{for start="0" end="$vo.data.part" step="1"}
+		<tr>
+			<td colspan="5">
+				{:date("Ymd",$vo.timespan)}{$vo.data.compress}{:date("His",$vo.timespan)}{$vo.data.compress}{$i+1}.sql
+			</td>
+			<td align="center">
+				<a class="layui-btn layui-btn-xs"
+					href='/home/database/downfile?time={$vo.data.time}&part={$i+1}'>バックアップをダウンロード（分割{$i+1}）</a>
+			</td>
+		</tr>
+		{/for}
+		{/volist}
+	</table>
+</div>
+
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	function gouguInit() {
+		function importData(data) {
+			if (data.code == 0) {
+				console.log(data.msg);
+				layer.closeAll();
+				layer.msg(data.msg, { time: 200000 });
+				if ($.isPlainObject(data.data)) {
+					$.ajax({
+						url: "/home/database/import",
+						type: 'get',
+						data: { "part": data.data.part, "start": data.data.start, time: data.data.time },
+						success: function (res) {
+							importData(res);
+						}
+					})
+				} else {
+					layer.msg(data.msg);
+					window.onbeforeunload = function () { return null; }
+				}
+			} else {
+				layer.msg(data.msg);
+			}
+		}
+		//行のツールイベントを監視する
+		$('[lay-event="import"]').on('click', function () {
+			var time = $(this).parent().data('time');
+			layer.confirm('このバックアップをリストアしますか？', {
+				icon: 3,
+				title: 'ヒント'
+			}, function (index) {
+				layer.msg("データをリストア中です...", { time: 200000 });
+				$.ajax({
+					url: "/home/database/import?time=" + time,
+					type: 'post',
+					success: function (res) {
+						importData(res);
+					}
+				})
+				window.onbeforeunload = function () { return "データベースをリストア中です。ページを閉じないでください。" }
+				layer.close(index);
+			});
+			return false;
+		})
+
+		$('[lay-event="del"]').on('click', function () {
+			var time = $(this).parent().data('time');
+			layer.confirm('このバックアップを削除しますか？', {
+				icon: 3,
+				title: 'ヒント'
+			}, function (index) {
+				$.ajax({
+					url: "/home/database/del",
+					data: { 'time': time },
+					success: function (res) {
+						layer.msg(res.msg);
+						if (res.code == 0) {
+							setTimeout(function () {
+								location.reload();
+							}, 2000)
+						}
+					}
+				})
+				layer.close(index);
+			});
+			return false;
+		})
+
+		$('[lay-event="reset"]').on('click', function () {
+			var time = $(this).parent().data('time');
+			layer.confirm('このバックアップをクリアしますか？', {
+				icon: 3,
+				title: 'ヒント'
+			}, function (index) {
+				$.ajax({
+					url: "/home/database/del",
+					data: { 'time': time, 'lock': 1 },
+					success: function (res) {
+						layer.msg(res.msg);
+						if (res.code == 0) {
+							setTimeout(function () {
+								location.reload();
+							}, 2000)
+						}
+					}
+				})
+				layer.close(index);
+			});
+			return false;
+		})
+	}
+</script>
+{/block}
+<!-- /脚本 -->

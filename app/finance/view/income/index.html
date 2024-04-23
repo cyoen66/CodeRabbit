@@ -1,0 +1,218 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<form class="layui-form gg-form-bar border-x border-t" lay-filter="barsearchform">
+		<div id="barDate" class="layui-input-inline">
+			<div class="layui-input-inline" style="width:110px; margin-bottom:0">
+				<input type="text" class="layui-input" id="start_time" placeholder="日付範囲を選択" readonly name="start_time">
+			</div>
+			~
+			<div class="layui-input-inline" style="width:110px; margin-bottom:0">
+				<input type="text" class="layui-input" id="end_time" placeholder="日付範囲を選択" readonly name="end_time">
+			</div>
+		</div>
+		<div class="layui-input-inline">
+			<select name="is_cash">
+				<option value="">状況を選択してください</option>
+				<option value="0">未入金</option>
+				<option value="1">一部入金</option>
+				<option value="2">全額入金</option>
+			</select>
+		</div>
+		<div class="layui-input-inline" style="width:180px;">
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+			<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+		</div>
+	</form>
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+<script type="text/html" id="toolbarDemo">
+<div class="layui-btn-container">
+    <h3 class="h3-title" style="height:32px;">入金リスト</h3>
+</div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const auth = "{$auth}";
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form,table = layui.table,tool=layui.tool, laydate = layui.laydate;
+		//日期范围
+		laydate.render({
+			elem: '#barDate',
+			range: ['#start_time', '#end_time'],
+			rangeLinked:true
+		});
+		
+		//监听搜索提交
+		form.on('submit(webform)', function(data){
+			let f=data.field;
+			layui.pageTable.reload({where:{is_cash:f.is_cash,start_time:f.start_time,end_time:f.end_time},page:{curr:1}});
+			return false;
+		});
+
+		layui.pageTable = table.render({
+			elem: '#test',
+			title: '入金リスト',
+			toolbar: '#toolbarDemo',
+			defaultToolbar:['filter', {title:'エクスポート',layEvent: 'LAYTABLE_EXCEL',icon: 'layui-icon-export'}],
+			url: "/finance/income/index", //数据接口	
+			cellMinWidth: 80,			
+			page: true, //开启分页
+			limit: 20,
+			cols: [
+				[
+					{
+						field: 'id',
+						title: 'ID号',
+						align: 'center',
+						width: 80
+					},{
+						field: 'is_cash',
+						title: '入金状況',
+						align: 'center',
+						width: 90,
+						templet:function(d){
+							var html='<span class="red">未入金</span>';
+							if(d.is_cash==1){
+								html='<span class="blue">一部入金</span>';
+							}
+							else if(d.is_cash==2){
+								html='<span class="green">全額入金</span>';
+							}
+							return html;
+						}
+					},{
+						field: 'enter_amount',
+						title: '入金金額(円)',
+						align: 'right',
+						width: 120,
+					},{
+						field: 'enter_time',
+						title: '最新入金時間',
+						align: 'center',
+						width: 136
+					}, {
+						field: 'invoice_title',
+						minWidth: 120,		
+						title: '領収書抬頭',
+						templet:function(d){
+							var html='';
+							if(d.type==1){
+								html='<span class="layui-badge layui-bg-blue">企业</span> '+d.invoice_title;
+							}
+							else if(d.type==2){
+								html='<span class="layui-badge layui-bg-green">个人</span> '+d.invoice_title;
+							}
+							return html;
+						}
+					},{
+						field: 'amount',
+						title: '領収書金額(円)',
+						align: 'right',
+						width: 160,
+					},{
+						field: 'invoice_type',
+						title: '領収証類型',
+						align: 'center',
+						width: 120,
+						templet:function(d){
+							var html='-';
+							if(d.invoice_type==1){
+								html='<span style="color:#1E9FFF">税金専用領収証</span>';
+							}
+							else if(d.invoice_type==2){
+								html='<span style="color:#5FB878">一般領収証</span>';
+							}
+							else if(d.invoice_type==3){
+								html='<span style="color:#FFB800">専門領収証</span>';
+							}
+							else{
+								html='<span style="color:#666666">必要なし</span>';
+							}
+							return html;
+						}
+					},{
+						field: 'user',
+						title: '申請者',
+						align: 'center',
+						width: 100
+					},{
+						field: 'department',
+						title: '所属部門',
+						align: 'center',
+						width: 120
+					},{
+						field: 'create_time',
+						title: '申請時間',
+						align: 'center',
+						width: 150
+					},{
+						field: 'code',
+						title: '領収証番号',
+						align: 'center',
+						width: 120
+					},{
+						field: 'open_time',
+						title: '発行時間',
+						align: 'center',
+						width: 136
+					}, {
+						field: 'right',
+						fixed: 'right',
+						title: '操作',
+						width: 142,
+						align: 'center',
+						templet:function(d){
+							var html='<div class="layui-btn-group">';
+							var btn1='<span class="layui-btn layui-btn-xs" lay-event="add">入金管理</span>';
+							var btn2='<span class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">入金表示</span>';
+							if(auth == 1){
+								return html+btn1+btn2+'</div>';
+							}
+							else{
+								return html+btn2+'</div>';
+							}
+						}
+					}
+				]
+			]
+		});
+		
+		//表头工具栏事件
+		table.on('toolbar(test)', function(obj){
+			if(obj.event === 'LAYTABLE_EXCEL'){
+				var formSelect = form.val('barsearchform');
+				formSelect.limit=99999;
+				$.ajax({
+					url: '/finance/income/index',
+					data: formSelect,
+					success:function(res){
+						table.exportFile('test', res.data,'xls');
+					}
+				});
+				return;
+			}
+		})
+
+		//监听行工具事件
+		table.on('tool(test)', function(obj) {
+			var data = obj.data;
+			if (obj.event === 'add') {
+				tool.side("/finance/income/add?id="+data.id);
+				return;
+			}
+			if (obj.event === 'view') {
+				tool.side("/finance/income/view?id="+data.id);
+				return;
+			}
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,169 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	{if condition="$id eq 0"}
+	<h3 class="pb-3">メニュー追加</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-2">親メニュー<font>*</font>
+			</td>
+			<td>
+				<select name="pid" lay-verify="required" lay-reqText="親メニュー/ノードを選択してください">
+					<option value="0">ルートメニュー追加</option>
+					{volist name=":set_recursion(admin_rule())" id="v"}
+					<option value="{$v.id}" {eq name="pid" value="$v.id" }selected="" {/eq}>{$v.title} </option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray-2">モジュール<font>*</font></td>
+			<td>
+				<select name="module" lay-verify="required" lay-reqText="モジュール">
+					<option value="">選択してください</option>
+					{volist name=":admin_module()" id="v"}
+					<option value="{$v.name}">{$v.title} </option>
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">名称<font>*</font>
+			</td>
+			<td>
+				<input type="text" name="title" lay-verify="required" autocomplete="off" placeholder="名称を入力してください"
+					lay-reqText="名称を入力してください" class="layui-input">
+			</td>
+			<td class="layui-td-gray">操作ログ名称<font>*</font>
+			</td>
+			<td>
+				<input type="text" name="name" lay-verify="required" placeholder="操作ログ名称を入力してください" lay-reqText="操作ログ名称を入力してください"
+					autocomplete="off" class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">画面URL</td>
+			<td>
+				<input type="text" name="src" placeholder="画面URLを入力してください（空き可能）" autocomplete="off" class="layui-input">
+			</td>
+			<td class="layui-td-gray">表示順序</td>
+			<td>
+				<input type="text" name="sort" value="0" placeholder="数字を入力してください（小さいほど前に表示されます）" autocomplete="off"
+					class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">メニュー区分<font>*</font>
+			</td>
+			<td>
+				<input type="radio" name="menu" value="1" title="はい">
+				<input type="radio" name="menu" value="2" title="いいえ">
+			</td>
+			<td class="layui-td-gray">アイコン</td>
+			<td colspan="3">
+				<input type="text" name="icon" style="width:150px; display:inline" placeholder="アイコンを入力してください（空き可能）"
+					autocomplete="off" class="layui-input">
+				如：icon-jichupeizhi<a href="{__GOUGU__}/icon/index.html" target="_blank" style="margin-left:10px; color:#007AFF">[アイコンを確認]</a>
+			</td>
+		</tr>
+	</table>
+	{else/}
+	<h3 class="pb-3">メニュー編集</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-2">親メニュー<font>*</font>
+			</td>
+			<td>
+				<select name="pid" lay-verify="required" lay-reqText="親メニューを選択してください">
+					<option value="0">ルートメニュー追加</option>
+					{volist name=":set_recursion(admin_rule())" id="v"}
+					<option value="{$v.id}" {eq name="$detail.pid" value="$v.id" }selected="" {/eq}>{$v.title} </option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray-2">モジュール<font>*</font></td>
+			<td>
+				<select name="module" lay-verify="required" lay-reqText="モジュール">
+					<option value="">選択してください</option>
+					{volist name=":admin_module()" id="v"}
+					<option value="{$v.name}" {eq name="$detail.module" value="$v.name" }selected="" {/eq}>{$v.title} </option>
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">名称<font>*</font>
+			</td>
+			<td>
+				<input type="text" name="title" value="{$detail.title}" lay-verify="required" autocomplete="off"
+					placeholder="名称を入力してください" lay-reqText="名称を入力してください" class="layui-input">
+			</td>
+			<td class="layui-td-gray">操作ログ名称<font>*</font>
+			</td>
+			<td>
+				<input type="text" name="name" value="{$detail.name}" lay-verify="required" placeholder="操作ログ名称を入力してください"
+					lay-reqText="操作ログ名称を入力してください" autocomplete="off" class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">画面URL</td>
+			<td>
+				<input type="text" name="src" value="{$detail.src}" placeholder="画面URLを入力してください（空き可能）" autocomplete="off"
+					class="layui-input">
+			</td>
+			<td class="layui-td-gray">表示順序</td>
+			<td>
+				<input type="text" name="sort" value="{$detail.sort}" placeholder="数字を入力してください（小さいほど前に表示されます）" autocomplete="off"
+					class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">メニュー区分<font>*</font>
+			</td>
+			<td>
+				<input type="radio" name="menu" value="1" title="はい" {eq name="$detail.menu" value="1" } checked{/eq}>
+				<input type="radio" name="menu" value="2" title="いいえ" {eq name="$detail.menu" value="2" } checked{/eq}>
+			</td>
+			<td class="layui-td-gray">アイコン</td>
+			<td colspan="3">
+				<input style="width:150px; display:inline" type="text" name="icon" value="{$detail.icon}" placeholder="アイコンを入力してください（オプション）" autocomplete="off" class="layui-input">
+				<strong class="iconfont {$detail.icon}"></strong><a href="{__GOUGU__}/icon/index.html" target="_blank" style="margin-left:10px; color:#007AFF">[アイコンを確認]</a>
+			</td>
+		</tr>
+	</table>
+	{/if}
+	<div class="py-3">
+		<input type="hidden" name="id" value="{$id}">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool;
+		//监听提交
+		form.on('submit(webform)', function (data) {
+			if (!data.field.menu || data.field.menu == '') {
+				layer.msg('左のメニューで表示するかどうかを選択してください');
+				return false;
+			}
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					setTimeout(function(){
+						parent.location.reload();
+					},1000);									
+				}
+			}
+			tool.post("/home/rule/add", data.field, callback);
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

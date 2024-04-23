@@ -1,0 +1,101 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">部門追加/変更</h3>
+	{eq name="$id" value="0"}
+	<table class="layui-table">
+		<tr>
+			<td class="layui-td-gray">部門名称<font>*</font></td>
+			<td>
+				<input type="text" name="title" lay-verify="required" autocomplete="off" placeholder="部門名称" lay-reqText="部門名称" class="layui-input">
+			</td>
+			<td class="layui-td-gray">上位部門<font>*</font></td>
+			<td>
+				<select name="pid" lay-verify="required" lay-reqText="上位部門を選択してください">
+					<option value="0">会社の直下部門</option>
+					{volist name="department" id="v"}
+					<option value="{$v.id}" {eq name="$pid" value="$v.id"} selected{/eq}>{$v.title}</option>
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">表示順<font>*</font></td>
+			<td>
+				<input type="text" name="sort" lay-verify="required|number" value="0" autocomplete="off" placeholder="表示順" lay-reqText="表示順" class="layui-input">
+			</td>
+			<td class="layui-td-gray-2">連絡先</td>
+			<td>
+				<input type="text" name="phone" placeholder="連絡先" autocomplete="off" class="layui-input">
+			</td>
+		</tr>
+	</table>
+	{else/}
+	<table class="layui-table">
+		<tr>
+			<td class="layui-td-gray">部門名称<font>*</font></td>
+			<td>
+				<input type="text" name="title" value="{$detail.title}" lay-verify="required" autocomplete="off" placeholder="部門名称" lay-reqText="部門名称" class="layui-input">
+			</td>
+			<td class="layui-td-gray">上位部門<font>*</font></td>
+			<td>
+				<select name="pid" lay-verify="required" lay-reqText="上位部門を選択してください">
+					<option value="0">会社の直下部門</option>
+					{volist name="department" id="v"}
+					<option value="{$v.id}" {eq name="$detail.pid" value="$v.id"} selected{/eq}>{$v.title}</option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray">表示順<font>*</font></td>
+			<td>
+				<input type="text" name="sort" lay-verify="required|number" value="{$detail.sort}" autocomplete="off" placeholder="表示順" lay-reqText="表示順" class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">部門長</td>
+			<td>
+				<select name="leader_id">
+					<option value="0">部門長を選択してください</option>
+					{volist name="users" id="v"}
+					<option value="{$v.id}" {eq name="detail.leader_id" value="$v.id"} selected{/eq}>{$v.name}</option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray-2">連絡先</td>
+			<td colspan="3">
+				<input type="text" name="phone" value="{$detail.phone}" placeholder="連絡先" autocomplete="off" class="layui-input">
+			</td>
+		</tr>
+	</table>
+	{/eq}
+	<div class="py-3">
+		<input type="hidden" name="id" value="{$id}">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool;		  
+		//监听提交
+		form.on('submit(webform)', function(data){
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose(1000);					
+				}
+			}
+			tool.post("/user/department/add", data.field, callback);
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

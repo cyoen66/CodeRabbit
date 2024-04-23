@@ -1,0 +1,70 @@
+<div class="pb-3">
+	<button class="layui-btn layui-btn-sm add-chance">+ 営業活動追加</button>
+</div>
+<div>
+	<table class="layui-hide" id="chance" lay-filter="chance"></table>
+</div>
+<script>
+function chance(){
+	if($('#customerTab').find('li').eq(2).data('load') =='true'){
+		return false;
+	}
+	$('#customerTab').find('li').eq(2).data('load','true');
+	let tool = layui.tool, table = layui.table;
+	//项目任务
+	parent.layui.chanceTable = table.render({
+		elem: '#chance',
+		title: '営業活動リスト',
+		cellMinWidth:80,
+		url: "/customer/api/get_chance",
+		where:{'customer_id':customer_id},
+		page: true, //开启分页
+		limit: 20,
+		cols:  [[
+			{field: 'id', title: '番号', width: 80, align: 'center'}
+			,{field:'belong_name',title: '所属者',align:'center',width: 80}
+			,{field:'title',title: '案件タイトル'}
+			,{field:'discovery_time',title: '発見時間',align:'center',width: 100}
+			,{ field: 'expected_time', title: '予定契約時間', width: 110, align: 'center'}
+			,{ field: 'expected_amount', title: '予定契約金額', width: 110, align: 'center'}
+			,{field:'stage_name',title: '現段階',width: 80, align: 'center'}
+			,{fixed:'right',width:132,title: '操作', align:'center',templet: function(d){
+					var html = '<div class="layui-btn-group">';
+					var btn='<a class="layui-btn layui-btn-xs" lay-event="edit">編集</a>';
+					var btn1='<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">表示</a>';
+					var btn2='<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">消除</a>';
+					return html+btn+btn1+btn2+'</div>';
+			}}			
+		]]
+	});
+	$('.add-chance').on('click',function(){
+		parent.layui.tool.side('/customer/api/add_chance?cid='+customer_id);
+	});
+	
+	table.on('tool(chance)', function(obj){
+		var data = obj.data; //获得当前行数据
+		var layEvent = obj.event;		 
+		if(layEvent === 'edit'){ //编辑
+			let url = '/customer/api/add_chance/id/'+data.id;
+			parent.layui.tool.side(url);
+		}
+		if(layEvent === 'view'){ //查看
+			let url = '/customer/api/view_chance/id/'+data.id;
+			parent.layui.tool.side(url);
+		}
+		if(layEvent === 'del'){ //删除
+			layer.confirm('この営業活動を消除しますか?', {icon: 3, title:'ヒント'}, function(index){
+				let callback = function (e) {
+					layer.msg(e.msg);
+					if (e.code == 0) {
+						parent.layui.chanceTable.reload();
+					}
+				}
+				tool.delete("/customer/api/delete_chance",{"id":data.id},callback);
+				layer.close(index);
+			});
+		}
+		return false;
+	})
+}
+</script>

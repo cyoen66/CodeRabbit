@@ -1,0 +1,72 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+{include file="/approve/view_style" /}
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<!-- 開発 #5　xie -->
+	<h3 class="pb-3">資産貸出申請</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-2">貸出者</td>
+			<td>{$detail.name}</td>
+			<td class="layui-td-gray-2">貸出者電話番号</td>
+			<td>{$detail.mobile}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">貸出部署</td>
+			<td colspan="3">
+				{volist name=":get_department()" id="vo"}
+					{eq name="$detail.department_type" value="$vo.id"}{$vo.title}{/eq}
+				{/volist}
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">貸出種類</td>
+			<td>
+				{eq name="$detail.detail_type" value="1"}現物{/eq}
+				{eq name="$detail.detail_type" value="2"}スキャンコピー{/eq}
+				{eq name="$detail.detail_type" value="3"}コピー{/eq}
+			</td>
+			<td class="layui-td-gray">資格種類</td>
+			<td>
+				{eq name="$detail.other_type" value="1"}企業資格{/eq}
+				{eq name="$detail.other_type" value="2"}個人資格{/eq}
+				{eq name="$detail.other_type" value="3"}退職/解雇者資格{/eq}
+				{eq name="$detail.other_type" value="4"}登録者実務印鑑{/eq}
+				{eq name="$detail.other_type" value="5"}労働契約{/eq}
+				{eq name="$detail.other_type" value="6"}社会保険支払記録{/eq}
+				{eq name="$detail.other_type" value="7"}所得証明{/eq}
+				{eq name="$detail.other_type" value="8"}その他{/eq}
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">貸出資格目的</td>
+			<td colspan="3">{$detail.content}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">貸出日</td>
+			<td>{$detail.start_time|date='Y-m-d'}</td>
+			<td class="layui-td-gray-2">予定返却日</td>
+			<td>{$detail.end_time|date='Y-m-d'}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">貸出資格詳細</td>
+			<td colspan="3">{$detail.remark}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">備考</td>
+			<td colspan="3">{$detail.remark1}</td>
+		</tr>
+	</table>	
+	{include file="/approve/view_step" /}
+</div>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+{include file="/approve/view_script" /}
+{/block}
+<!-- /脚本 -->

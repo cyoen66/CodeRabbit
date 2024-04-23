@@ -1,0 +1,197 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">ドキュメント新規</h3>
+    <table class="layui-table">
+		<tr>
+			<td class="layui-td-gray">タイトル<font>*</font></td>
+			<td colspan="3"><input type="text" name="title" lay-verify="required" lay-reqText="タイトルを入力してください" autocomplete="off" placeholder="タイトルを入力してください"
+				class="layui-input"></td>
+			<td class="layui-td-gray">分類<font>*</font></td>
+			<td>
+			  <select name="cate_id" lay-verify="required" lay-reqText="分類を選択してください">
+				<option value="">分類を選択してください</option>
+				{volist name=":set_recursion(article_cate())" id="v"}
+				<option value="{$v.id}">{$v.title}</option>
+				{/volist}
+			  </select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">区分</td>
+			<td>
+			  <select name="type">
+				<option value="">区分を選択してください</option>
+				<option value="1">重要</option>
+				<option value="2">緊急</option>
+				<option value="3">一般</option>
+			  </select>
+			</td>
+			<td class="layui-td-gray" style="width:50px">状態</td>
+			<td>
+			  <input type="radio" name="status" value="1" title="通常" checked>
+			  <input type="radio" name="status" value="0" title="取り下げ">
+			</td>
+			<td class="layui-td-gray">並べ替え</td>
+			<td>
+			  <input type="text" name="sort" value="0" placeholder="並べ替えを入力してください，数字" autocomplete="off" class="layui-input">
+			</td>			
+		</tr>
+		<tr>
+			<td class="layui-td-gray">共有設定</td>
+			<td colspan="5">
+				<input type="radio" name="is_share" lay-filter="type" value="0" title="非公開">
+				<input type="radio" name="is_share" lay-filter="type" value="1" title="全員" checked>
+				<input type="radio" name="is_share" lay-filter="type" value="2" title="部門">
+				<input type="radio" name="is_share" lay-filter="type" value="3" title="一部社員">
+			</td>
+
+		</tr>
+		<tr id="depament" style="display:none">
+			<td class="layui-td-gray">共有部門<font>*</font></td>
+			<td colspan="5">
+				<input type="text" name="share_depaments" value="" placeholder="共有部門を選択してください" readonly class="layui-input picker-depaments">
+				<input type="hidden" name="share_dids" value="">
+			</td>
+		</tr>
+		<tr id="person" style="display:none">
+			<td class="layui-td-gray">共有人員<font>*</font></td>
+			<td colspan="5">
+				<input type="text" name="share_names" value="" placeholder="共有人員を選択してください" readonly class="layui-input picker-more">
+				<input type="hidden" name="share_uids" value="">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">
+				<div class="layui-input-inline">関連ファイル</div>
+				<div class="layui-input-inline">
+					<button type="button" class="layui-btn layui-btn-xs" id="uploadBtn"><i class="layui-icon"></i></button>
+				</div>
+			</td>
+			<td colspan="5" style="line-height:inherit">
+				<div class="layui-row" id="fileBox">
+					<input type="hidden" data-type="file" name="file_ids" value="">
+				</div>
+			</td>
+		</tr> 
+      <tr>
+        <td class="layui-td-gray" style="vertical-align:top;">概要</td>
+        <td colspan="5">
+          <textarea name="desc" placeholder="概要を入力してください，200文字を超えてはいけません" class="layui-textarea"></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td class="layui-td-gray" style="vertical-align:top;">内容<font>*</font></td>
+        <td colspan="5">
+          <textarea name="content" placeholder="内容を入力してください" class="layui-textarea" id="container" style="border:0;padding:0"></textarea>
+        </td>
+      </tr>
+    </table>
+    <div class="pt-3">
+      <button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">確定</button>
+      <button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+    </div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+const moduleInit = ['tool','employeepicker','oaTool','tagpicker','tinymce'];
+function gouguInit() {
+	var form = layui.form,tool=layui.tool,oaTool = layui.oaTool, tagspicker = layui.tagpicker, upload = layui.upload;
+	
+	//选择共享类型
+	form.on('radio(type)', function (data) {
+		if(data.value==2){
+			$('#person').hide();
+			$('#depament').show();
+		}
+		else if(data.value==3){
+			$('#person').show();
+			$('#depament').hide();
+		}
+		else{
+			$('#person').hide();
+			$('#depament').hide();
+		}
+	});
+	
+    //编辑器初始化
+	var editor = layui.tinymce;
+	var edit = editor.render({
+		selector: "#container",
+		menubar:false,
+		images_upload_url: '/api/index/upload/sourse/tinymce',//图片上传接口
+		height: 500
+	});
+
+	//相关附件上传
+	oaTool.addFile();	
+	
+	//tag选择
+    var tags = new tagspicker({
+      'url': "/api/index/get_keyword_cate",
+      'target': 'keyword_name',
+      'tag_ids': 'keyword_id',
+      'tag_tags': 'keyword_name',
+      'height': 500,
+      'isDiy': 1
+    });
+
+    //封面上传
+    var uploadInst = upload.render({
+		elem: '#test1'
+		, url: "/api/index/upload"
+		, done: function (res) {
+			layer.msg(res.msg);
+			if (res.code == 0) {
+				//上传成功
+				$('#demo1 input').attr('value', res.data.id);
+				$('#demo1 img').attr('src', res.data.filepath);
+			}
+		}
+    });
+
+    //监听提交
+    form.on('submit(webform)', function (data) {
+      data.field.content = tinyMCE.editors['container'].getContent();
+		if (data.field.content == '') {
+			layer.msg('内容を修正してください');
+			return false;
+		}
+		if(data.field.is_share == 0 || data.field.is_share == 1){
+			data.field.share_dids = '';
+			data.field.share_uids = '';
+		}
+		else if(data.field.is_share == 2){
+			data.field.share_uids = '';
+			if(data.field.share_dids==''){
+				layer.msg('共有する部門を選択してください');
+				return false;
+			}
+		}
+		else if(data.field.is_share == 3){
+			data.field.share_dids = '';
+			if(data.field.share_uids==''){
+				layer.msg('共有する社員を選択してください');
+				return false;
+			}
+		}	
+      let callback = function (e) {
+			layer.msg(e.msg);
+			if (e.code == 0) {
+				tool.sideClose(1000);
+			}
+		}
+		tool.post("/article/index/add", data.field, callback);
+		return false;
+    });
+
+  }
+
+</script>
+{/block}
+<!-- /脚本 -->

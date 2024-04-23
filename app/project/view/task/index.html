@@ -1,0 +1,135 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="style"}
+<style>
+	.layui-unselect dl {
+		max-height: 188px;
+	}
+</style>
+{/block}
+{block name="body"}
+<div id="taskList" class="p-3">
+	<div class="gg-form-bar border-t border-x">
+		<form id="taskForm" class="layui-form" lay-filter="barsearchform">
+			<div class="layui-input-inline" style="width:100px;">
+				<select name="flow_status" lay-filter="status">
+					<option value="">状態</option>
+					<option value="1">未着手</option>
+					<option value="2">進行中</option>
+					<option value="3">完了</option>
+					<option value="4">未解決</option>
+					<option value="5">クローズ</option>
+				</select>
+			</div>
+			<div class="layui-input-inline" style="width:100px;">
+				<select name="priority" lay-filter="priority">
+					<option value="">優先度</option>
+					<option value="1">低</option>
+					<option value="2">中</option>
+					<option value="3">高</option>
+					<option value="4">緊急</option>
+				</select>
+			</div>
+			<div class="layui-input-inline" style="width:100px;">
+				<select name="cate" lay-filter="cate">
+					<option value="">作業類型</option>
+					{volist name="cate" id="vo"}
+					<option value="{$vo.id}">{$vo.title}</option>
+					{/volist}
+				</select>
+			</div>
+			<div class="layui-input-inline" style="width:200px;">
+				<input type="text" name="project_name" placeholder="所属プロジェクト" readonly class="layui-input picker-project" autocomplete="off" />
+				<input name="project_id" style="display: none;" value="" />
+			</div>
+			<div class="layui-input-inline" style="width:160px;">
+				<input type="text" name="director" placeholder="任務責任者、複数選択可" readonly class="layui-input picker-more" autocomplete="off" />
+				<input name="director_uid" style="display: none;" value="" />
+			</div>
+			<div class="layui-input-inline" style="width:200px;">
+				<input type="text" name="keywords" placeholder="主題/説明内容" class="layui-input" autocomplete="off" />
+			</div>
+			<div class="layui-input-inline" style="width:180px;">
+				<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+				<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+			</div>
+		</form>
+	</div>
+	<table class="layui-hide" id="task" lay-filter="task"></table>
+</div>
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+  	<button class="layui-btn layui-btn-sm" lay-event="add">+ 新規タスク</button>
+  </div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+		<script>
+			const moduleInit = ['tool','employeepicker','tablePlus','oaTool'];
+			function gouguInit() {
+				var table = layui.tablePlus, form = layui.form, tool = layui.tool;
+
+				layui.taskTable = table.render({
+			elem: '#task',
+			title: '任務リスト',
+			toolbar: '#toolbarDemo',
+			is_excel:true,
+			cellMinWidth: 80,
+			url: "/project/task/index", // データインターフェース
+			page: true, // ページングを有効にする
+			limit: 20,
+			height: 'full-82',
+			cols: [[
+				{
+					field: 'id', title: '番号', width: 80, align: 'center', fixed: 'left', templet: function (d) {
+						return 'T' + d.id;
+					}
+				}
+				, {
+					field: 'flow_name', title: 'ステータス', align: 'center', width: 100, templet: function (d) {
+						var html = '<span class="layui-badge layui-bg-' + d.flow_status + '">' + d.flow_name + '</span>';
+						return html;
+					}
+				}
+				, { field: 'cate_name', title: 'タスク分類', width: 90, align: 'center' }
+				,{
+					field: 'title', title: 'タイトル', minWidth:240, rowspan: 2, templet: function (d) {
+						var html = '<span class="layui-badge layui-bg-' + d.priority + '">' + d.priority_name + '</span> <a class="side-a" data-href="/project/task/view/id/' + d.id + '">' + d.title + '</a>';
+						return html;
+					}
+				}
+				, { field: 'project_name', title: '関連プロジェクト', width: 200 }
+				, { field: 'director_name', title: '責任者', align: 'center', width: 80 }
+				, { field: 'assist_admin_names', title: '確認者', width: 200 }
+				, { field: 'plan_hours', title: '予定工数', align: 'center', width: 80 }
+				, {
+					field: 'end_time', title: '予定終了日', width: 150, templet: function (d) {
+						var html = d.end_time;
+						if (d.delay > 0) {
+							html += '<span class="red ml-1" style="font-size:12px;">遅延' + d.delay + '日</span>';
+						}
+						return html;
+					}
+				}
+			]]
+		});
+		
+		//触发事件
+		table.on('toolbar(task)', function(obj){
+			if(obj.event === 'add'){
+				tool.side('/project/task/add');
+				return;
+			}
+		});
+		//监听搜索提交
+		form.on('submit(webform)', function (data) {
+			layui.taskTable.reload({ where: data.field });
+			return false;
+		});
+	}		
+</script>
+{/block}
+<!-- /脚本 -->

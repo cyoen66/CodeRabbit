@@ -1,0 +1,339 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<form class="layui-form gg-form-bar border-x border-t" lay-filter="barsearchform">
+		<div id="barDate" class="layui-input-inline">
+			<div class="layui-input-inline" style="width:110px; margin-bottom:0;">
+				<input type="text" class="layui-input" id="start_time" placeholder="時間帯を選択してください" readonly name="start_time">
+			</div>
+			~
+			<div class="layui-input-inline" style="width:110px; margin-bottom:0">
+				<input type="text" class="layui-input" id="end_time" placeholder="時間帯を選択してください" readonly name="end_time">
+			</div>
+		</div>
+		<div class="layui-input-inline">
+			<select name="check_status">
+				<option value="">状態を選択してください</option>
+				<option value="2">承認承認済み、開示待ち</option>
+				<option value="5">発行済み</option>
+				<option value="10">無効</option>
+			</select>
+		</div>
+		<div class="layui-input-inline" style="width:200px;">
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+			<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+		</div>
+	</form>
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+<script type="text/html" id="toolbarDemo">
+<div class="layui-btn-container">
+    <h3 class="h3-title" style="height:32px;">領収証リスト</h3>
+</div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form,table = layui.table,tool=layui.tool, laydate = layui.laydate;
+		//日期范围
+		laydate.render({
+			elem: '#barDate',
+			range: ['#start_time', '#end_time'],
+			rangeLinked:true
+		});
+		
+		//监听搜索提交
+		form.on('submit(webform)', function(data){
+			let f=data.field;
+			layui.pageTable.reload({where:{check_status:f.check_status,start_time:f.start_time,end_time:f.end_time},page:{curr:1}});
+			return false;
+		});
+
+		layui.pageTable = table.render({
+			elem: '#test',
+			title: '領収証リスト',
+			toolbar: '#toolbarDemo',
+			defaultToolbar:['filter', {title:'导出EXCEL',layEvent: 'LAYTABLE_EXCEL',icon: 'layui-icon-export'}],
+			url: "/finance/invoice/checkedlist", //数据接口	
+			cellMinWidth: 80,			
+			page: true, //开启分页
+			limit: 20,
+			cols: [
+				[
+					{
+						field: 'id',
+						title: 'ID号',
+						align: 'center',
+						width: 80
+					}, {
+						field: 'invoice_title',
+						title: '領収証抬头',
+						minWidth: 240,
+						templet:function(d){
+							var html='';
+							if(d.type==1){
+								html='<span class="layui-badge layui-bg-blue">企业</span> '+d.invoice_title;
+							}
+							else if(d.type==2){
+								html='<span class="layui-badge layui-bg-green">个人</span> '+d.invoice_title;
+							}
+							return html;
+						}
+					},{
+						field: 'amount',
+						title: '領収証金額(円)',
+						align: 'right',
+						width: 120,
+					},{
+						field: 'invoice_type',
+						title: '領収証類型',
+						align: 'center',
+						width: 120,
+						templet:function(d){
+							var html='-';
+							if(d.invoice_type==1){
+								html='<span class="green">税金専用領収証</span>';
+							}
+							else if(d.invoice_type==2){
+								html='<span class="blue">一般領収証</span>';
+							}
+							else if(d.invoice_type==3){
+								html='<span class="red">専門領収証</span>';
+							}
+							return html;
+						}
+					},{
+						field: 'check_status',
+						title: '領収証状態',
+						align: 'center',
+						width: 120,
+						templet:function(d){
+							var html='<span class="black">承認待ち</span>';
+							if(d.check_status==1){
+								html='<span class="blue">承認中</span>';
+							}
+							else if(d.check_status==2){
+								html='<span class="green">承認承認済み、開示待ち</span>';
+							}
+							else if(d.check_status==3){
+								html='<span class="red">未承認</span>';
+							}
+							else if(d.check_status==4){
+								html='<span class="red">キャンセル</span>';
+							}
+							else if(d.check_status==5){
+								html='<span class="green">発行済み</span>';
+							}
+							else if(d.check_status==10){
+								html='<span class="yellow">廃棄</span>';
+							}
+							return html;
+						}
+					},{
+						field: 'name',
+						title: '申請者',
+						align: 'center',
+						width: 90
+					},{
+						field: 'department_name',
+						title: '所属部門',
+						align: 'center',
+						width: 120
+					},{
+						field: 'create_time',
+						title: '申請時間',
+						align: 'center',
+						width: 150
+					},{
+						field: 'open_name',
+						title: '発行者',
+						align: 'center',
+						width: 90
+					},{
+						field: 'open_time',
+						title: '発行時間',
+						align: 'center',
+						width: 100
+					},{
+						field: 'code',
+						title: '領収証番号',
+						align: 'center',
+						width: 120
+					}, {
+						field: 'right',
+						fixed: 'right',
+						title: '操作',
+						width: 170,
+						align: 'center',
+						templet:function(d){
+							//0待审、1审批中、2通过、3失败、4撤销、5已开具、10已作废
+							var html='<div class="layui-btn-group">';
+							var btn1='<span class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">表示</span>';
+							var btn2='<span class="layui-btn layui-btn-warm layui-btn-xs" lay-event="open">領収証で記録</span>';
+							var btn3='<span class="layui-btn layui-btn-xs" lay-event="open">編集</span>';
+							var btn4='<span class="layui-btn layui-btn-danger layui-btn-xs" lay-event="tovoid">廃棄</span>';
+							var btn5='<span class="layui-btn layui-btn-danger layui-btn-xs" lay-event="novoid">逆廃棄</span>';
+							html+=btn1;
+							if(d.check_status==2){
+								html+=btn2;
+							}
+							if(d.check_status==5){
+								html+=btn3+btn4;
+							}
+							if(d.check_status==10){
+								html+=btn5;
+							}
+							html+='</div>';
+							return html;
+						}
+					}
+				]
+			]
+		});
+		
+		//表头工具栏事件
+		table.on('toolbar(test)', function(obj){
+			if(obj.event === 'LAYTABLE_EXCEL'){
+				var formSelect = form.val('barsearchform');
+				formSelect.limit=99999;
+				$.ajax({
+					url: '/finance/invoice/checkedlist',
+					data: formSelect,
+					success:function(res){
+						table.exportFile('test', res.data,'xls');
+					}
+				});
+				return;
+			}
+		})
+		//监听行工具事件
+		table.on('tool(test)', function(obj) {
+			var data = obj.data;
+			if (obj.event === 'view') {
+				tool.side("/finance/invoice/view?id="+data.id);
+				return;
+			}
+			if(obj.event === 'open'){
+				layer.open({
+					type: 1
+					,title: '発行済みで記録'
+					,area: '368px;'
+					,id: 'LAY_module' //设定一个id，防止重复弹出
+					,btn: ['はい', 'いいえ']
+					,btnAlign: 'c'
+					,content: '<div style="padding-top:15px;">\
+								<div class="layui-form-item">\
+								  <label class="layui-form-label">発行番号</label>\
+								  <div class="layui-input-inline">\
+									<input type="text" name="code" autocomplete="off" value="'+data.code+'" placeholder="発行番号を入力してください" class="layui-input">\
+								  </div>\
+								</div>\
+								<div class="layui-form-item">\
+								  <label class="layui-form-label">発行時間</label>\
+								  <div class="layui-input-inline">\
+									<input type="text" id="open_time" name="open_time" autocomplete="off" value="'+data.open_time+'" placeholder="発行時間を選択してください" class="layui-input">\
+								  </div>\
+								</div>\
+								<div class="layui-form-item">\
+								  <label class="layui-form-label">出荷番号</label>\
+								  <div class="layui-input-inline">\
+									<input type="text" name="delivery" autocomplete="off" value="'+data.delivery+'" placeholder="出荷番号を入力してください" class="layui-input">\
+								  </div>\
+								</div>\
+							  </div>'
+					,success:function(){
+						laydate.render({
+							elem: '#open_time',
+							showBottom:false
+						});
+					}
+					,yes: function(index){
+						let code = $('#LAY_module').find('[name="code"]').val();
+						let open_time = $('#LAY_module').find('[name="open_time"]').val();
+						let delivery = $('#LAY_module').find('[name="delivery"]').val();
+						if(code == ''){
+							layer.msg('発行番号を入力してください');
+							return false;
+						}
+						if(open_time == ''){
+							layer.msg('発行時間を選択してください');
+							return false;
+						}
+						$.ajax({
+							url: "/finance/api/open",
+							type: 'post',
+							data: {
+								id: data.id,
+								code: code,
+								open_time: open_time,
+								delivery: delivery
+							},
+							success: function(e) {
+								layer.msg(e.msg);
+								if (e.code == 0) {
+									layer.close(index);
+									layui.pageTable.reload();
+								}
+							}
+						})
+					}
+					,btn2: function(){
+						layer.closeAll();
+					}
+				});			
+			}
+			if (obj.event === 'tovoid') {
+				layer.confirm('この領収証が廃棄しますか', {
+					icon: 3,
+					title: 'ヒント'
+				}, function(index) {
+					$.ajax({
+						url: "/finance/api/tovoid",
+						type:'post',
+						data: {
+							id: data.id,
+							check_status:10
+						},
+						success: function(res) {
+							layer.msg(res.msg);
+							if (res.code == 0) {
+								layui.pageTable.reload();
+							}
+						}
+					})
+					layer.close(index);
+				});
+			}
+			if (obj.event === 'novoid') {
+				layer.confirm('この領収証が廃棄しますか', {
+					icon: 3,
+					title: 'ヒント'
+				}, function(index) {
+					$.ajax({
+						url: "/finance/api/novoid",
+						type:'post',
+						data: {
+							id: data.id,
+							check_status:5
+						},
+						success: function(res) {
+							layer.msg(res.msg);
+							if (res.code == 0) {
+								layui.pageTable.reload();
+							}
+						}
+					})
+					layer.close(index);
+				});
+			}
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

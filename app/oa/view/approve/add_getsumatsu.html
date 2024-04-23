@@ -1,0 +1,712 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+{include file="/approve/add_style" /}
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h1 class="pb-3" style="text-align: center;">勤怠報告</h1>
+	<input id="detail" hidden name="detail" value="{$detail.work_record}">
+	<input id="count" hidden name="count" value="{$detail.count}">
+
+	</input>
+	{eq name="$id" value="0"}
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-2">所属部門</td>
+			<td colspan="5">
+				<select name="report_department" lay-verify="required">
+					{volist name=":get_department()" id="vo"}
+					<option value="{$vo.id}" {$admin_info.department===$vo.title ? 'selected' : '' }>{$vo.title}
+					</option>
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray" style="width: 10%;">
+				<label>報告年度</label>
+			</td>
+			<td style="width: 40%;">
+				<select name="report_year" id="reportY" lay-filter="selctOnchange">
+					{volist name="detail.reportY" id="vo"}
+					<option value="{$vo}" {$detail.thisY==$vo ? 'selected' : '' }>{$vo}
+					</option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray" style="width: 10%;"><label>報告月</label></td>
+			<td style="width: 40%;">
+				<select name="report_month" id="reportM" lay-filter="selctOnchange">
+					{volist name="detail.reportM" id="vo"}
+					<option value="{$vo}" {$detail.thisM==$vo ? 'selected' : '' }>{$vo}
+					</option>
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">
+				<label for="inputMethod">入力方法</label>
+			</td>
+			<td>
+				<select name="inputMethod" id="inputMethod">
+					<option value="0" selected>手動入力</option>
+					<option value="1">勤務表アップロード</option>
+				</select>
+			</td>
+			<td class="layui-td-gray"><label>添付</label>
+				<div class="layui-input-inline">
+					<button type="button" class="layui-btn layui-btn-xs" id="upFile">
+						<i class="layui-icon"></i>
+					</button>
+				</div>
+			</td>
+			<td style="line-height:inherit">
+				<div class="layui-row" id="fileList">
+					<input data-type="file" type="hidden" name="file_ids" value="">
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">
+				<label>基準内(時間)</label>
+			</td>
+			<td>
+				<input name="standardsTime" id="standardsTime" value="8:00" class="layui-input">
+			</td>
+			<td class="layui-td-gray">
+				<label>jobコード</label>
+			</td>
+			<td>
+				<input name="projectCode" id="projectCode" value="" class="layui-input">
+			</td>
+		</tr>
+	</table>
+	<table class="layui-hide" id="ID-table-data"></table>
+
+	{else/}
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-2">所属部門</td>
+			<td colspan="5">
+				<select name=" " lay-verify="required">
+					{volist name=":get_department()" id="vo"}
+					<option value="{$vo.id}" {$detail.report_department===$vo.title ? 'selected' : '' }>{$vo.title}
+					</option>
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray" style="width: 10%;">
+				<label>報告年度</label>
+			</td>
+			<td style="width: 40%;">
+				<select name="report_year" id="reportY" lay-filter="selctOnchange">
+					{volist name="detail.reportY" id="vo"}
+					<option value="{$vo}" {$detail.report_year==$vo ? 'selected' : '' }>{$vo}
+					</option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray" style="width: 10%;"><label>報告月</label></td>
+			<td style="width: 40%;">
+				<select name="report_month" id="reportM" lay-filter="selctOnchange">
+					{volist name="detail.reportM" id="vo"}
+					<option value="{$vo}" {$detail.report_month==$vo ? 'selected' : '' }>{$vo}
+					</option>
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">
+				<label for="inputMethod">入力方法</label>
+			</td>
+			<td>
+				<select name="inputMethod" id="inputMethod">
+					<option value="0" {$detail.inputMethod==0 ? 'selected' : '' }>手動入力</option>
+					<option value="1" {$detail.inputMethod==1 ? 'selected' : '' }>勤務表アップロード</option>
+				</select>
+			</td>
+			<td class="layui-td-gray"><label>添付</label>
+				<div class="layui-input-inline">
+					<button type="button" class="layui-btn layui-btn-xs" id="upFile">
+						<i class="layui-icon"></i>
+					</button>
+				</div>
+			</td>
+			<td style="line-height:inherit">
+				<div class="layui-row" id="fileList">
+					<input data-type="file" type="hidden" name="file_ids" value="{$detail.file_ids}">
+					{notempty name="$detail.file_ids"}
+					{volist name="$detail.fileArray" id="vo"}
+					<div class="layui-col-md4" id="uploadImg{$vo.id}">{:file_card($vo)}</div>
+					{/volist}
+					{/notempty}
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">
+				<label>基準内(時間)</label>
+			</td>
+			<td>
+				<input name="standardsTime" id="standardsTime" value="{$detail.standardsTime}" class="layui-input">
+			</td>
+			<td class="layui-td-gray">
+				<label>ジョブコード</label>
+			</td>
+			<td>
+				<input name="projectCode" id="projectCode" value="{$detail.projectCode}" class="layui-input">
+			</td>
+		</tr>
+	</table>
+	<div class="layui-form-item" style="margin-top: 50px;">
+		<table class="layui-hide" id="ID-table-data"></table>
+	</div>
+
+	{/eq}
+	<!-- 合計 要求 -->
+	<div class="layui-form-item" style="margin-top: 50px;">
+		<table class="layui-table layui-table-form " id="ID-table-sum-data">
+			<tr>
+				<td style="width: 8%;">合計</td>
+				<td style="width: 8%;">
+					出勤日数
+				</td>
+				<td>
+					<div class="layui-form-item">
+						<div class="layui-input-group">
+							<input type="text" id="sumDayId" name="work_day_total" value="0"
+								style="border:none;text-align:right;" readonly="readonly" class="layui-input">
+							<div class="layui-input-suffix">日</div>
+						</div>
+					</div>
+				</td>
+				<td style="width: 8%;">
+					作業時間
+				</td>
+				<td>
+					<div class="layui-form-item">
+						<div class="layui-input-group">
+							<input type="text" id="sumHourId" name="work_hours_total" value="0" style="border:none;text-align:right;"
+								readonly="readonly" class="layui-input">
+							<div class="layui-input-suffix">hh:mm</div>
+						</div>
+					</div>
+				</td>
+				<td style="width: 8%;">
+					時間外
+				</td>
+				<td>
+					<div class="layui-form-item">
+						<div class="layui-input-group">
+							<input type="text" id="exceptId" name="extra_working_hours" value="0" style="border:none;text-align:right;"
+								readonly="readonly" class="layui-input">
+							<div class="layui-input-suffix">hh:mm</div>
+						</div>
+					</div>
+				</td>
+				<td style="width: 8%;">
+					控 除
+				</td>
+				<td>
+					<div class="layui-form-item">
+						<div class="layui-input-group">
+							<input type="text" id="deductId" value="0" style="border:none;text-align:right;"
+								readonly="readonly" class="layui-input">
+							<div class="layui-input-suffix">hh:mm</div>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<input type="hidden" name="work_record" id="work_record" value="">
+	</div>
+	{eq name="$id" value="0"}
+	{include file="/approve/add_flow" kinou="getsumatsu" kinouType="create" /}
+	{else/}
+	{include file="/approve/add_flow" kinou="getsumatsu" kinouType="update" /}
+	{/eq}
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<!-- 作業開始時刻select作成 -->
+<script type="text/html" id="workStartTimeSelectPrimary">
+
+	<select name="workStartTimeSelect" class="layui-border select-demo-primary" lay-ignore data-value = {{d.workStartTime}} >
+		<option value="">-</option>
+		{volist name="detail.workStartSelect" id="str"}
+		<option value="{$str}" >{$str}
+		</option>
+		{/volist}
+	</select> 
+</script>
+<!-- 作業完了時刻select作成 -->
+<script type="text/html" id="workEndTimeSelectPrimary">
+	<select name="workEndTimeSelect" class="layui-border select-demo-primary"   lay-ignore data-value = {{d.workEndTime}}>
+		<option value="">-</option>
+		{volist name="detail.workEndSelect" id="str"}
+		<option value="{$str}" >{$str}
+		</option>
+		{/volist}
+	</select> 
+</script>
+<!-- 控除時刻 select作成 -->
+<script type="text/html" id="deductSelectPrimary">
+	<select name="deductTimeSelect" class="layui-border select-demo-primary"  lay-ignore data-value = {{d.deductTime}}>
+		<option value="">-</option>
+		{volist name="detail.workDeductSelect" id="str"}
+		<option value="{$str}" >{$str}
+		</option>
+		{/volist}
+	</select> 
+</script>
+
+<script>
+	var tableData;
+	var selectYearVal = "";
+	var selectMonthVal = "";
+	// テーブルデータ変更
+	// index: trのindex； -1の場合、全てデータ変更
+	function tableDataEdit(key, value, rowData) {
+		selectYearVal = $("#reportY").val();
+		selectMonthVal = $("#reportM").val();
+		var idx = rowData.index;
+		if (key == "workStartTimeSelect") {
+			tableData[idx].workStartTime = value;
+		} else if (key == "workEndTimeSelect") {
+			tableData[idx].workEndTime = value;
+		} else if (key == "deductTimeSelect") {
+			tableData[idx].deductTime = value
+		} else if (key == "remark") {
+			tableData[idx].remark = value
+			$("#work_record").val(JSON.stringify(tableData));
+			return;
+		}
+		calculateWorkHours(tableData[idx], rowData);
+	}
+
+	//rowDataがnullの場合、基準内時間変更、テーブルリロード
+	//以外の場合、rowのデータ変更、
+	function calculateWorkHours(tableRowData, rowData) {
+		var sumTime; //小計(Hr)
+		var eTime; //時間外
+		var workEndTime = tableRowData.workEndTime;
+		if (workEndTime == "" || tableRowData.workStartTime == "" || tableRowData.deductTime == "") {
+			if (rowData != null) {
+				rowData.update({ sumDayTime: ""});  // 修改行数据
+				rowData.update({ exceptTime: "00:00"});  // 修改行数据
+				$("#work_record").val(JSON.stringify(tableData));
+				sumDay(tableData);
+			}
+			return;
+		}
+
+		if (workEndTime == "23:59") {
+			workEndTime = "24:00";
+			console.log("workEndTime:" + workEndTime);
+	
+		}
+		var daySum;
+		// data.deductTime
+		var startI = tableRowData.workStartTime.search(":");
+		var startH = tableRowData.workStartTime.substr(0, startI);
+		var startMin = tableRowData.workStartTime.substr(startI + 1);
+
+		var endI = workEndTime.search(":");
+		var endH = workEndTime.substr(0, endI);
+		var endMin = workEndTime.substr(endI + 1);
+		console.log("endH:" + endH);
+		console.log("endMin:" + endMin);
+		var deductI = tableRowData.deductTime.search(":");
+		var deductH = tableRowData.deductTime.substr(0, deductI);
+		var deductMin = tableRowData.deductTime.substr(deductI + 1);
+
+		if (endH < startH || (endH == startH && endMin < startMin)) {
+			if (rowData != null) {
+				layer.msg("開始時間<完了時間");
+				rowData.update({ sumDayTime: ""});  // 修改行数据
+				rowData.update({ exceptTime: "00:00"});  // 修改行数据
+				$("#work_record").val(JSON.stringify(tableData));
+				sumDay(tableData);
+			}
+			return;
+		}
+
+		var min = parseInt(endMin) - parseInt(startMin) - parseInt(deductMin);
+		var hour = parseInt(endH) - parseInt(startH) - parseInt(deductH);
+
+		if (min < 0 && hour < 1) {
+			if (rowData != null) {
+				layer.msg("完了時間-開始時間-控除時間 < 0");
+				rowData.update({ sumDayTime: ""});  // 修改行数据
+				rowData.update({ exceptTime: "00:00"});  // 修改行数据
+				$("#work_record").val(JSON.stringify(tableData));
+				sumDay(tableData);
+			}
+			return;
+		} else if (min < -60 && hour < 2) {
+			if (rowData != null) {
+				layer.msg("完了時間-開始時間-控除時間 < 0");
+				rowData.update({ sumDayTime: ""});  // 修改行数据
+				rowData.update({ exceptTime: "00:00"});  // 修改行数据
+				$("#work_record").val(JSON.stringify(tableData));
+				sumDay(tableData);
+			}
+			return;
+		} else if (hour < 0) {
+			if (rowData != null) {
+				layer.msg("完了時間-開始時間-控除時間 < 0");
+				rowData.update({ sumDayTime: ""});  // 修改行数据
+				rowData.update({ exceptTime: "00:00"});  // 修改行数据
+				$("#work_record").val(JSON.stringify(tableData));
+				sumDay(tableData);
+			}
+			return;
+		} else {
+			if (min < 0) {
+				if (min < -60) {
+					min = min + 120;
+					hour = hour - 2;
+				} else {
+					min = min + 60;
+					hour--;
+				}
+			}
+		}
+		var standardsTime;
+		if (tableRowData.week != "土" && tableRowData.week != "日") {
+			standardsTime = $("#standardsTime").val();
+		} else {
+			standardsTime = "00:00"
+		}
+		console.log(tableRowData.week);
+		console.log(standardsTime);
+		sumTime = hour + ":" + min;
+		// 基準内
+		eTime = timeSubtract(sumTime, standardsTime);
+		tableRowData.exceptTime = dateFormat(eTime);
+		tableRowData.sumDayTime = dateFormat(sumTime);
+		if (rowData != null) {
+			rowData.update({ sumDayTime: dateFormat(sumTime) });  // 修改行数据
+			rowData.update({ exceptTime: dateFormat(eTime) });  // 修改行数据
+			$("#work_record").val(JSON.stringify(tableData));
+			sumDay(tableData);
+		}
+	}
+
+	// 时间补零
+	function dateFormat(hourMin) {
+		var colonIdex = hourMin.search(":");
+		var hour;
+		var min;
+		if (colonIdex == 1) {
+			hour = parseInt(hourMin.substr(0, 1));
+		} else {
+			hour = parseInt(hourMin.substr(0, colonIdex));
+		}
+		min = parseInt(hourMin.substr(colonIdex + 1));
+		if (hour < 10) {
+			hour = "0" + hour;
+		}
+		if (min < 10) {
+			min = "0" + min;
+		}
+		return hour + ":" + min;
+	}
+	// 时间相加00:00 格式
+	function timeAdd(sumTime, newTime) {
+		var sumTimeI = sumTime.search(":");
+		var newTimeI = newTime.search(":");
+		var resHour = parseInt(sumTime.substr(0, sumTimeI)) + parseInt(newTime.substr(0, newTimeI));
+		var resMin = parseInt(sumTime.substr(sumTimeI + 1)) + parseInt(newTime.substr(newTimeI + 1));
+		if (resMin >= 60) {
+			resMin -= 60;
+			resHour++;
+		}
+		return dateFormat(resHour + ":" + resMin);
+	}
+
+	function timeSubtract(date1, date2) {
+		var colonIdex = date1.search(":");
+		var date1Hour;
+		var date1Min;
+		date1Hour = parseInt(date1.substr(0, colonIdex));
+		date1Min = parseInt(date1.substr(colonIdex + 1));
+		colonIdex = date2.search(":");
+		var date2Hour;
+		var date2Min = "";
+		if (colonIdex == 1) {
+			date2Hour = parseInt(date2.substr(0, 1));
+		} else {
+			date2Hour = parseInt(date2.substr(0, colonIdex));
+		}
+		date2Min = parseInt(date2.substr(colonIdex + 1));
+		if (date1Hour == date2Hour) {
+			if (date1Min > date2Min) {
+				return "00:" + parseInt(date1Min - date2Min);
+			} else {
+				return "00:00"
+			}
+		} else if (date1Hour > date2Hour) {
+			if (date1Min > date2Min) {
+				return parseInt(date1Hour - date2Hour) + ":" + parseInt(date1Min - date2Min);
+			} else if (date1Min == date2Min) {
+				return parseInt(date1Hour - date2Hour) + ":00";
+			} else {
+				return parseInt(date1Hour) - 1 + ":" + parseInt(parseInt(date1Min) + 60 - parseInt(date2Min));
+			}
+		} else {
+			return "00:00"
+		}
+	}
+	function sumDay(data) {
+		var sumDayVal = 0;
+		var sumTime = "00:00";
+		var sumExceptval = "00:00";
+		var sumDeductVal = "00:00";
+		for (let i = 0; i < data.length; i++) {
+			if (data[i].sumDayTime != undefined && data[i].sumDayTime != "") {
+				sumTime = timeAdd(sumTime, data[i].sumDayTime);
+				sumExceptval = timeAdd(sumExceptval, data[i].exceptTime);
+				sumDeductVal = timeAdd(sumDeductVal, data[i].deductTime);
+				sumDayVal++;
+			}
+		}
+		$("#sumHourId").val(dateFormat(sumTime));
+		$("#exceptId").val(dateFormat(sumExceptval));
+		$("#deductId").val(dateFormat(sumDeductVal));
+		$("#sumDayId").val(sumDayVal);
+
+	}
+	// テーブルリロード
+	function tableReloadDate() {
+		table.reloadData("ID-table-data",
+			{
+				data: tableData,
+			}
+		);
+		$("#work_record").val(JSON.stringify(tableData));
+	}
+	// テーブル初期化
+	function tableDataInit(date, tdate) {
+		tableData = tdate;
+		var y = date.getFullYear();
+		var m = date.getMonth() + 1;
+		let days = new Date(y, m, 0).getDate();
+		var weekArr = new Array("日", "月", "火", "水", "木", "金", "土");
+		var weekNo;
+		var startTimeVal = "";
+		var endTimeVal = "";
+		var normalTimeVal;
+		var exceptTimeVal = "00:00";
+		var deductTimeVal = "";
+		var sumDayTimeVal = "";
+
+		for (var i = 1; i < days + 1; i++) {
+			var d = i;
+			if (i < 10) {
+				d = "0" + i;
+			}
+			weekNo = new Date(y + "-" + m + "-" + d).getDay();
+			if (weekNo == 0 || weekNo == 6) {
+				normalTimeVal = "0";
+				deductTimeVal = "";
+			} else {
+				normalTimeVal = "8";
+				deductTimeVal = "01:00";
+			}
+			tableData[i - 1] = { // 赋值已知数据
+				"day": y + "-" + m + "-" + d,
+				"week": weekArr[weekNo],
+				"workStartTime": startTimeVal,
+				"workEndTime": endTimeVal,
+				"standardsTime": normalTimeVal,
+				"exceptTime": exceptTimeVal,
+				"deductTime": deductTimeVal,
+				"sumDayTime": sumDayTimeVal,
+				"remark": "",
+			};
+		}
+		$("#work_record").val(JSON.stringify(tableData));
+	}
+	function renderTable(table) {
+		// 已知数据渲染
+		table.render({
+			elem: '#ID-table-data',
+			cols: [[ //标题栏
+				{ field: 'day', title: '月/日', width: 120, sort: false },
+				{ field: 'week', title: '曜', width: 60, sort: false },
+				{ field: 'workStartTime', title: '作業開始時刻', templet: '#workStartTimeSelectPrimary', sort: false },
+				{ field: 'workEndTime', title: '作業完了時刻', templet: '#workEndTimeSelectPrimary', sort: false },
+				// { field: 'standardsTime', title: '基準内(Hr)', sort: false },
+				{ field: 'exceptTime', title: '時間外(Hr)', sort: false },
+				{ field: 'deductTime', title: '控 除(Hr)', templet: '#deductSelectPrimary' },
+				{ field: 'sumDayTime', title: '小計(Hr)', sort: false },
+				{ field: 'remark', title: '作業内容(備考)', edit: 'textarea' }
+			]],
+			data: tableData,
+			done: function (res, page, count) {
+				var that = this.elem.next();
+				var demandDay = 0;
+				res.data.forEach(function (item, index) {
+					if (item.week == "日" || item.week == "土") {
+						var tr = that.find(".layui-table-box tbody tr[data-index='" + index + "']");
+						tr.css("background-color", "#d1cccc");
+					} else {
+						demandDay++;
+					}
+					layui.each($("select[name='workStartTimeSelect']", ""), function (index, item) {
+						var elem = $(item);
+						elem.val(elem.data('value'));
+					});
+					layui.each($("select[name='workEndTimeSelect']", ""), function (index, item) {
+						var elem = $(item);
+						elem.val(elem.data('value'));
+					});
+					layui.each($("select[name='deductTimeSelect']", ""), function (index, item) {
+						var elem = $(item);
+						elem.val(elem.data('value'));
+					});
+
+				});
+				// 合計 日数 時間 時間外 控 除
+				sumDay(tableData);
+				var options = this;
+				var index;
+				// 获取当前行数据
+				table.getRowData = function (elem) {
+					index = $(elem).closest('tr').data('index');
+					return table.cache[options.id][index] || {};
+				};
+
+				var rowData;
+
+				table.on('row(ID-table-data)', function (obj) {
+					rowData = obj;
+				});
+
+				// 作業開始select event
+				$('.select-demo-primary').on('change', function () {
+					tableDataEdit(this.name, this.value, rowData);
+				});
+				table.on('edit(ID-table-data)', function (obj) {
+					var value = obj.value // 得到修改后的值
+					var data = obj.data // 得到所在行所有键值
+					var field = obj.field; // 得到字段
+					tableDataEdit(field, value, obj)
+				});
+
+			}
+		});
+
+		$("#work_record").val(JSON.stringify(tableData));
+	}
+
+	function viewInit() {
+		var d = new Date();
+		var nowYear = d.getFullYear();
+		var yy = document.getElementById("reportY");
+		var tdata = $("#detail").val();
+		if (tdata == undefined || tdata == null || tdata == "") {
+			tdata = new Array();
+			tableDataInit(d, tdata);
+		} else {
+			tableData = eval('(' + tdata + ')');
+		}
+		renderTable(table);
+		$("#work_record").val(JSON.stringify(tableData));
+
+	}
+</script>
+<script>
+	const moduleInit = ['tool', 'employeepicker', 'oaTool'];
+	function gouguInit() {
+
+		var form = layui.form,
+			tool = layui.tool,
+			oaTool = layui.oaTool,
+			laydate = layui.laydate;
+		dropdown = layui.dropdown;
+		table = layui.table;
+		viewInit();
+		selectYearVal = $("#reportY").val();
+		selectMonthVal = $("#reportM").val();
+		form.on('select(selctOnchange)', function (data) {
+			var yy = $("#reportY").val();
+			var mm = $("#reportM").val();
+			if (yy == selectYearVal && mm == selectMonthVal) {
+				return;
+			}
+
+			if ($("#sumDayId").val() > 0) {
+				layer.confirm('データは保存されません,日付を切り替えますか', {
+					title: "操作提示",
+					icon: 0,
+					btn: ['確認', 'キャンセル']
+				}, function (index, layero) {
+					var yy = $("#reportY").val();
+					var mm = $("#reportM").val();
+					selectYearVal = yy;
+					selectMonthVal = mm;
+					var date = new Date(yy + "-" + mm + "-01");
+					tableDataInit(date, new Array());
+					renderTable(table);
+					layer.closeAll('dialog');
+				}, function (index) {
+					$("#reportM").val(selectMonthVal);
+					$("#reportY").val(selectYearVal);
+					form.render("select");
+					layer.closeAll('dialog');
+				});
+			} else {
+				selectYearVal = $("#reportY").val();
+				selectMonthVal = $("#reportM").val();
+				var yy = $("#reportY").val();
+				var mm = $("#reportM").val();
+				var date = new Date(yy + "-" + mm + "-01");
+				tableDataInit(date, new Array());
+				renderTable(table);
+			}
+		});
+		oaTool.addFile({
+			btn: 'upFile',
+			box: 'fileList'
+		});
+		if (typeof (flowStep) == "function") {
+			flowStep();
+		}
+
+		if ($("#count").val() > 0) {
+			layer.msg("該当報告年月の勤怠報告は存在ありました。");
+		}
+
+		$('#standardsTime').on("input", function (e) {
+			const timeRegex = /^(2[0-3]|[0-1]?\d):[0-5]\d?$/;
+			if (!timeRegex.test(e.delegateTarget.value)) {
+				layer.msg("時間を正しいフォーマットで入力してくださいhh:mm");
+				e.delegateTarget.value = "8:00"
+			}
+			//update table data
+
+			for (let i = 0; i < tableData.length; i++) {
+				calculateWorkHours(tableData[i], null);
+			}
+			tableReloadDate();
+			$("#work_record").val(JSON.stringify(tableData));
+			sumDay(tableData);
+
+
+		});
+	}
+
+</script>
+
+{/block}
+<!-- /脚本 -->

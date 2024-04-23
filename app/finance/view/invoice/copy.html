@@ -1,0 +1,179 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<form class="layui-form gg-form-bar border-x border-t">
+		<div id="barDate" class="layui-input-inline">
+			<div class="layui-input-inline" style="width:110px; margin-bottom:0">
+				<input type="text" class="layui-input" id="start_time" placeholder="時間帯を選択してください" readonly name="start_time">
+			</div>
+			~
+			<div class="layui-input-inline" style="width:110px; margin-bottom:0">
+				<input type="text" class="layui-input" id="end_time" placeholder="時間帯を選択してください" readonly name="end_time">
+			</div>
+		</div>
+		<div class="layui-input-inline" style="width:180px;">
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+			<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+		</div>
+	</form>
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool','employeepicker'];
+	function gouguInit() {
+		var form = layui.form,table = layui.table,tool=layui.tool, laydate = layui.laydate;
+		//日期范围
+		laydate.render({
+			elem: '#barDate',
+			range: ['#start_time', '#end_time'],
+			rangeLinked:true
+		});
+		
+		//监听搜索提交
+		form.on('submit(webform)', function(data){
+			let f=data.field;
+			layui.pageTable.reload({where:{start_time:f.start_time,end_time:f.end_time},page:{curr:1}});
+			return false;
+		});
+
+		layui.pageTable = table.render({
+			elem: '#test',
+			title: '領収証リスト',
+			url: "/finance/invoice/copy", //数据接口		
+			page: true, //开启分页
+			cellMinWidth: 80,
+			limit: 20,
+			cols: [
+				[
+					{
+						field: 'id',
+						title: 'ID号',
+						align: 'center',
+						width: 80
+					}, {
+						field: 'invoice_title',
+						title: '領収証抬头',
+						minWidth: 240,
+						templet:function(d){
+							var html='';
+							if(d.type==1){
+								html='<span class="layui-badge layui-bg-blue">企業</span> '+d.invoice_title;
+							}
+							else if(d.type==2){
+								html='<span class="layui-badge layui-bg-green">個人</span> '+d.invoice_title;
+							}
+							return html;
+						}
+					},{
+						field: 'amount',
+						title: '請求金額(円)',
+						align: 'right',
+						width: 120,
+					},{
+						field: 'invoice_type',
+						title: '領収証種類',
+						align: 'center',
+						width: 120,
+						templet:function(d){
+							var html='-';
+							if(d.invoice_type==1){
+								html='<span class="green">税金専用領収証</span>';
+							}
+							else if(d.invoice_type==2){
+								html='<span class="blue">一般領収証</span>';
+							}
+							else if(d.invoice_type==3){
+								html='<span class="red">専門領収証</span>';
+							}
+							return html;
+						}
+					},{
+						field: 'check_status',
+						title: '領収証状態',
+						align: 'center',
+						width: 120,
+						templet:function(d){
+							var html='<span class="black">承認待ち</span>';
+							if(d.check_status==1){
+								html='<span class="blue">承認中</span>';
+							}
+							else if(d.check_status==2){
+								html='<span class="green">承認済み、発行待ち</span>';
+							}
+							else if(d.check_status==3){
+								html='<span class="red">承認不通過</span>';
+							}
+							else if(d.check_status==4){
+								html='<span class="red">キャンセル</span>';
+							}
+							else if(d.check_status==5){
+								html='<span class="green">発行済み</span>';
+							}
+							else if(d.check_status==10){
+								html='<span class="yellow">無効</span>';
+							}
+							return html;
+						}
+					},{
+						field: 'name',
+						title: '申請者',
+						align: 'center',
+						width: 90
+					},{
+						field: 'department_name',
+						title: '所属部門',
+						align: 'center',
+						width: 120
+					},{
+						field: 'create_time',
+						title: '申請日時',
+						align: 'center',
+						width: 150
+					},{
+						field: 'open_name',
+						title: '領収証作成者',
+						align: 'center',
+						width: 120
+					},{
+						field: 'open_time',
+						title: '領収証日付',
+						align: 'center',
+						width: 100
+					},{
+						field: 'code',
+						title: '領収証番号',
+						align: 'center',
+						width: 120
+					}, {
+						field: 'right',
+						fixed: 'right',
+						title: '操作',
+						width: 80,
+						align: 'center',
+						templet:function(d){
+							//0待审、1审批中、2通过、3失败、4撤销、5已开具、10已作废
+							var html='<span class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">表示</span>';
+							return html;
+						}
+					}
+				]
+			]
+		});
+		//监听行工具事件
+		table.on('tool(test)', function(obj) {
+			var data = obj.data;
+			if (obj.event === 'view') {
+				tool.side("/finance/invoice/view?id="+data.id);
+				return;
+			}
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

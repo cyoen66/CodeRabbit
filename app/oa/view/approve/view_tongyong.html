@@ -1,0 +1,47 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+{include file="/approve/view_style" /}
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<!-- 開発 #5　xie -->
+	<h3 class="pb-3">その他申請</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">緊急度</td>
+			<td>
+				{eq name="$detail.detail_type" value="1"}通常{/eq}
+				{eq name="$detail.detail_type" value="2"}緊急{/eq}
+				{eq name="$detail.detail_type" value="3"}特急{/eq}
+			</td>
+			<td class="layui-td-gray-2">承認内容</td>
+			<td>{$detail.name}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">詳細説明</td>
+			<td colspan="3">{$detail.content}</td>
+		</tr>
+		{notempty name="$detail.file_ids"}
+		<tr>
+			<td class="layui-td-gray">関連添付</td>
+			<td colspan="3" style="line-height:inherit">
+				<div class="layui-row">
+					{volist name="$detail.fileArray" id="vo"}
+					<div class="layui-col-md4" id="uploadImg{$vo.id}">{:file_card($vo,'view')}</div>
+					{/volist}
+				</div>
+			</td>
+		</tr>
+		{/notempty}
+	</table>	
+	{include file="/approve/view_step" /}
+</div>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+{include file="/approve/view_script" /}
+{/block}
+<!-- /脚本 -->

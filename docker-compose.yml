@@ -1,0 +1,68 @@
+# version: "3"
+# services:
+#   mysql:
+#     build: ./docker/mysql/
+#     volumes:
+#       - ./docker/mysql/initdb.d:/docker-entrypoint-initdb.d #初期処理のフォルダ。初回起動のみでおｋ
+#       - ./docker/mysql/db:/var/lib/mysql #ここにデータ永続化するためのファイルが入る。
+#     image: oa-db-mysql
+#     container_name: "oa-db-mysql"
+#     environment:
+#       - MYSQL_ROOT_PASSWORD=y4PCvLJS
+#     ports:
+#       - 8006:3306
+#   mysql5:
+#     build: ./docker/mysql/
+#     volumes:
+#       - ./docker/mysql5/initdb.d:/docker-entrypoint-initdb.d #初期処理のフォルダ。初回起動のみでおｋ
+#       - ./docker/mysql5/db:/var/lib/mysql #ここにデータ永続化するためのファイルが入る。
+#     image: oa-db-mysql
+#     container_name: "mysql5"
+#     environment:
+#       - MYSQL_ROOT_PASSWORD=y4PCvLJS
+#     ports:
+#       - 8007:3306
+version: '3'
+# volumes:
+#   oa-dev-mysql:
+services:
+  db:
+    container_name: db
+    build: ./docker/mysql/
+    volumes:
+      - ./docker/mysql/initdb.d:/docker-entrypoint-initdb.d #初期処理のフォルダ。初回起動のみでおｋ
+      - ./docker/mysql/db:/var/lib/mysql #ここにデータ永続化するためのファイルが入る。
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=y4PCvLJS
+    ports:
+      - "3309:3306"
+    networks:
+      - oa
+  web:
+    container_name: web
+    image: nginx
+    
+    ports:
+      - "9001:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./public:/var/www/public
+    networks:
+      - oa
+  php:
+    build: ./docker/php
+    user: www-data:www-data
+    # extra_hosts:
+    # - 'host.docker.internal:host-gateway'
+    volumes:
+      - .:/var/www  
+    networks:
+      - oa
+networks:
+    oa:
+      driver: bridge
+    # env_file:
+    #   - .env
+
+# docker-compose up -d

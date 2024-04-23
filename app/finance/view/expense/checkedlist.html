@@ -1,0 +1,205 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<form class="layui-form gg-form-bar border-x border-t" lay-filter="barsearchform">
+		<div id="barDate" class="layui-input-inline">
+			<div class="layui-input-inline" style="width:110px; margin-bottom:0;">
+				<input type="text" class="layui-input" id="start_time" placeholder="時間帯を選択してください" readonly name="start_time">
+			</div>
+			~
+			<div class="layui-input-inline" style="width:110px; margin-bottom:0;">
+				<input type="text" class="layui-input" id="end_time" placeholder="時間帯を選択してください" readonly name="end_time">
+			</div>
+		</div>
+		<div class="layui-input-inline">
+			<select name="check_status">
+				<option value="">状態選択</option>
+				<option value="2">承認通過、支払待ち</option>
+				<option value="5">支払済み</option>
+			</select>
+		</div>
+		<div class="layui-input-inline" style="width:200px;">
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+			<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+		</div>
+	</form>
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+<script type="text/html" id="toolbarDemo">
+<div class="layui-btn-container">
+    <h3 class="h3-title" style="height:32px;">支払いリスト</h3>
+</div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form,table = layui.table,tool=layui.tool, laydate = layui.laydate;
+		//日期範囲
+		laydate.render({
+			elem: '#barDate',
+			range: ['#start_time', '#end_time'],
+			rangeLinked:true
+		});
+		
+		//監聽搜索提交
+		form.on('submit(webform)', function(data){
+			let f=data.field;
+			layui.pageTable.reload({where:{check_status:f.check_status,start_time:f.start_time,end_time:f.end_time},page:{curr:1}});
+			return false;
+		});
+
+		layui.pageTable = table.render({
+			elem: '#test',
+			title: '支払い支払リスト',
+			toolbar: '#toolbarDemo',
+			defaultToolbar:['filter', {title:'エクスポート',layEvent: 'LAYTABLE_EXCEL',icon: 'layui-icon-export'}],
+			url: "/finance/expense/checkedlist", //データのインターフェース	
+			cellMinWidth: 80,			
+			page: true, //ページネーションを有効にする
+			limit: 20,
+			cols: [
+				[
+					{
+						field: 'id',
+						title: 'ID',
+						align: 'center',
+						width: 80
+					}, {
+						field: 'amount',
+						title: '支払い総額（円）',
+						align: 'right',
+						width: 160,
+					},{
+						field: 'check_status',
+						title: 'ステータス',
+						align: 'center',
+						width: 120,
+						templet:function(d){
+							var html='<span class="red">承認不通過</span>';
+							if(d.check_status==1){
+								html='<span class="green">承認中</span>';
+							}
+							else if(d.check_status==2){
+								html='<span class="blue">承認通過</span>';
+							}
+							else if(d.check_status==4){
+								html='<span class="red">キャンセル</span>';
+							}
+							else if(d.check_status==5){
+								html='<span class="yellow">支払済み</span>';
+							}
+							return html;
+						}
+					},{
+						field: 'admin_name',
+						title: '申請者',
+						align: 'center',
+						width: 100
+					},{
+						field: 'department',
+						title: '支払い部門',
+						align: 'center',
+						width: 150
+					},{
+						field: 'code',
+						title: '支払い証明番号',
+						minWidth: 150,
+					},{
+						field: 'expense_time',
+						title: '領収書日付',
+						align: 'center',
+						width: 120
+					},{
+						field: 'income_month',
+						title: '入金月',
+						align: 'center',
+						width: 90
+					},{
+						field: 'create_time',
+						title: '入力日時',
+						align: 'center',
+						width: 150
+					},{
+						field: 'pay_name',
+						title: '振込者',
+						align: 'center',
+						width: 90
+					},{
+						field: 'pay_time',
+						title: '振込確認日時',
+						align: 'center',
+						width: 150
+					}, {
+						field: 'right',
+						fixed: 'right',
+						title: '操作',
+						width: 150,
+						align: 'center',
+						templet:function(d){
+							//0待承認、1承認中、2通過、3失敗、4取り下げ、5発行済み、10作废済み
+							var html='<div class="layui-btn-group">';
+							var btn1='<span class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">詳細</span>';
+							var btn2='<span class="layui-btn layui-btn-warm layui-btn-xs" lay-event="open">支払済みとする</span>';
+							html+=btn1;
+							if(d.check_status==2){
+								html+=btn2;
+							}
+							html+='</div>';
+							return html;
+						}
+					}
+				]
+			]
+		});
+		
+		//ツールバーのイベントを監視する
+		table.on('toolbar(test)', function(obj){
+			if(obj.event === 'LAYTABLE_EXCEL'){
+				var formSelect = form.val('barsearchform');
+				formSelect.limit=99999;
+				$.ajax({
+					url: '/finance/expense/checkedlist',
+					data: formSelect,
+					success:function(res){
+						table.exportFile('test', res.data,'xls');
+					}
+				});
+				return;
+			}
+		});
+
+		//行ツールのイベントを監視する
+		table.on('tool(test)', function(obj) {
+			var data = obj.data;
+			if (obj.event === 'view') {
+				tool.side("/finance/expense/view?id="+data.id);
+				return;
+			}
+			if(obj.event === 'open'){
+				layer.confirm('支払済みとしてマークしますか？', {
+						icon: 3,
+						title: '確認'
+					}, function(index) {
+						$.ajax({
+							url: "/finance/api/topay",
+							type:'post',
+							data: {id: data.id},
+							success: function(res) {
+								layer.msg(res.msg);
+								layui.pageTable.reload();
+							}
+						})
+						layer.close(index);
+				});
+			}
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

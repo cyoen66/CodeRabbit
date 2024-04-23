@@ -1,0 +1,108 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">個人情報の変更</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">ユーザーID</td>
+			<td>{$admin.username}</td>
+			<td class="layui-td-gray">名前</td>
+			<td>{$admin.name}</td>
+			<td class="layui-td-gray" rowspan="4">プロフィール写真</td>
+			<td rowspan="4">
+				<div class="layui-upload">
+					<button type="button" class="layui-btn layui-btn-normal" id="test1">個人写真</button>
+					<div class="layui-upload-list" id="demo1">
+						<img src="{$admin.thumb}" width="100" />
+						<input type="hidden" name="thumb" value="{$admin.thumb}">
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">電話番号</td>
+			<td>{$admin.mobile}</td>
+			<td class="layui-td-gray">性別</td>
+			<td>
+				<input type="radio" name="sex" value="1" title="男" {eq name="$admin.sex" value="1"} checked{/eq}>
+				<input type="radio" name="sex" value="2" title="女" {eq name="$admin.sex" value="2"} checked{/eq}>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">所属部署</td>
+			<td>{$admin.department}</td>
+			<td class="layui-td-gray">役職</td>
+			<td>{$admin.position}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">従業員タイプ</td>
+			<td>
+				{eq name="$admin.type" value="3"}<span style="color:#5FB878">契約社員</span>{/eq}
+				{eq name="$admin.type" value="2"}<span style="color:#01AAED">個人事業主</span>{/eq}
+				{eq name="$admin.type" value="1"}<span style="color:#393D49">正社員</span>{/eq}
+			</td>
+			<td class="layui-td-gray">入社日</td>
+			<td>
+				{$admin.entry_time | date='Y-m-d'}
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">自己紹介</td>
+			<td colspan="5">
+				<textarea name="desc" placeholder="自己紹介を入力してください" class="layui-textarea">{$admin.desc|default=''}</textarea>
+			</td>
+		</tr>
+	</table>
+	<div style="padding: 10px 0">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">確定</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool,upload = layui.upload;
+		//头像上传
+		var uploadInst = upload.render({
+			elem: '#test1',
+			url: "/api/index/upload",
+			done: function (res) {
+				layer.msg(res.msg);
+				if (res.code == 0) {
+					//上传成功
+					$('#demo1 input').attr('value', res.data.filepath);
+					$('#demo1 img').attr('src', res.data.filepath);
+				}
+			}
+		});
+
+		//监听提交
+		form.on('submit(webform)', function (data) {
+			$.ajax({
+				url: "/home/index/edit_personal",
+				type: 'post',
+				data: data.field,
+				success: function (e) {
+					if (e.code == 0) {
+						layer.confirm('保存されました。このページを閉じますか?', { icon: 3, title: 'ヒント' }, function (index) {
+							parent.layui.tool.tabClose();
+							layer.close(index);
+						});
+					} else {
+						layer.msg(e.msg);
+					}
+				}
+			})
+			return false;
+		});
+	}
+
+</script>
+{/block}
+<!-- /脚本 -->

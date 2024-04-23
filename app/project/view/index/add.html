@@ -1,0 +1,345 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+<style>
+.layui-form-pane .layui-form-label {width:60px; padding:8px;}
+.layui-form-pane .layui-form-label.label-index,.layui-form-pane .layui-form-label.label-first {width:80px;}
+.layui-form-item .layui-input-inline {margin-right:4px;}
+.layui-form-item .layui-inline {margin-right:0; margin-bottom:0;}
+</style>
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-3">
+	<h3 class="pb-3">新規プロジェクト</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-2">プロジェクト名称<font>*</font></td>
+			<td>
+				<input type="text" name="name" lay-verify="required" lay-reqText="名称を入力してください" placeholder="名称を入力してください" class="layui-input" value="">
+			</td>
+			<td class="layui-td-gray-2">予定期間<span style="color: red">*</span></td>
+			<td id="date">
+				<div class="layui-input-inline">
+					<input type="text" id="start_time" name="start_time" readonly lay-verify="required" lay-reqText="開始日を選択してください" placeholder="開始日を選択してください" class="layui-input" value="">
+				</div>
+				-
+				<div class="layui-input-inline">
+					<input type="text" id="end_time" name="end_time" readonly lay-verify="required" lay-reqText="終了日を選択してください" placeholder="終了日を選択してください" class="layui-input" value="">
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-3">責任者<font>*</font></td>
+			<td>
+				<input type="text" name="director_name" placeholder="責任者を選択してください" readonly class="layui-input picker-one" value="">
+				<input type="hidden" name="director_uid" lay-verify="required" readonly lay-reqText="責任者を選択してください" value="">
+			</td>
+			<td class="layui-td-gray">メンバー<span style="color: red">*</span></td>
+			<td colspan="3">
+				<input type="text" id="team_admin_names" name="team_admin_names"  placeholder="メンバーを選択してください" readonly class="layui-input picker-more" value="">
+				<input type="hidden" id="team_admin_ids" name="team_admin_ids" class="layui-input" value="">
+			</td>
+		</tr>
+		<!-- 非表示する -->
+		{gt name=":isModule('contract')" value="NG"}
+		<tr>
+			<td class="layui-td-gray">関連契約</td>
+			<td colspan="8">
+				<input type="text" class="layui-input contract-picker" name="contract_name" placeholder="関連する契約を選択してください" readonly value="">		
+				<input type="hidden" class="layui-input" name="contract_id" value="0">		
+				<input type="hidden" class="layui-input" name="customer_id" value="0">		
+			</td>
+		</tr>
+		{/gt}
+		<tr>
+			<td class="layui-td-gray">プロジェクト概要<span style="color: red">*</span></td>
+			<td colspan="3">
+				<textarea name="content" class="layui-textarea" lay-verify="required" lay-reqText="プロジェクト概要を入力してください"></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="8" class="layui-td-gray" style="text-align:left; font-weight:600">プロジェクトフェーズ<font>*</font></td>
+		</tr>
+		<tr>
+			<td colspan="8">
+				<div id="flowList">
+					{volist name = "$section" id="vo" key="k"}
+					{eq name="key" value="0"}
+					<div class="layui-form-item layui-form-pane">
+						<div class="layui-inline">
+						  <label class="layui-form-label label-first" style="width:120px;">フェーズ{$key+1}</label>
+						  <div class="layui-input-inline" style="width:120px;">
+							<select name="flowName[]" lay-filter="flowName" lay-verify="required" lay-reqText="フェーズ名を選択してください">
+								<option value="">選択してください</option>
+								{volist name = "section" id="voo" key="kk"}
+								<option value="{$voo}" {eq name="$kk" value ="$k"} selected{/eq}>{$voo}</option>
+								{/volist}
+							</select>
+						  </div>
+						</div>
+						<div class="layui-inline">
+						  <label class="layui-form-label">責任者</label>
+						  <div class="layui-input-inline" style="width:120px;">
+							<input type="text" name="chargeNames[]" autocomplete="off" readonly placeholder="フェーズ責任者を選択してください" class="layui-input picker-one" lay-verify="required" lay-reqText="フェーズ責任者を選択してください" value="{$user_info.name}">
+							<input type="hidden" name="chargeIds[]" value="{$user_info.id}">
+						  </div>
+						</div>
+						<div class="layui-inline">
+						  <label class="layui-form-label" style="width:130px;">メンバー</label>
+						  <div class="layui-input-inline" style="width:250px;">
+							<input type="text" name="membeNames[]" autocomplete="off" readonly placeholder="メンバーを選択してください（複数選択可）" class="layui-input picker-more" lay-verify="required" lay-reqText="メンバーを選択してください">
+							<input type="hidden" name="membeIds[]">
+						  </div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label" style="width:100px;">予定期間</label>
+							<div class="layui-input-inline" style="width:186px;">
+								<input type="text" name="cycleDate[]" class="layui-input select-time-range" readonly placeholder="予定期間" lay-verify="required" lay-reqText="予定期間を選択してください">
+							</div>
+						</div>
+					</div>
+					{else/}
+					<div class="layui-form-item layui-form-pane">
+						<div class="layui-inline">
+						  <label class="layui-form-label label-index" style="width:120px;">フェーズ{$key+1}</label>
+						  <div class="layui-input-inline" style="width:120px;">
+							<select name="flowName[]" lay-filter="flowName" lay-verify="required" lay-reqText="フェーズ名を選択してください">
+								<option value="">選択してください</option>
+								{volist name = "section" id="voo" key="kk"}
+								<option value="{$voo}" {eq name="$kk" value ="$k"} selected{/eq}>{$voo}</option>
+								{/volist}
+							</select>
+						  </div>
+						</div>
+						<div class="layui-inline">
+						  <label class="layui-form-label">責任者</label>
+						  <div class="layui-input-inline" style="width:120px;">
+							<input type="text" name="chargeNames[]" autocomplete="off" readonly placeholder="フェーズ責任者を選択してください" class="layui-input picker-one" lay-verify="required" lay-reqText="フェーズ責任者を選択してください">
+							<input type="hidden" name="chargeIds[]">
+						  </div>
+						</div>
+						<div class="layui-inline">
+						  <label class="layui-form-label" style="width:130px;">メンバー</label>
+						  <div class="layui-input-inline" style="width:250px;">
+							<input type="text" name="membeNames[]" autocomplete="off" readonly placeholder="メンバーを選択してください（複数選択可）" class="layui-input picker-more" lay-verify="required" lay-reqText="メンバーを選択してください">
+							<input type="hidden" name="membeIds[]">
+						  </div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label" style="width:100px;">予定期間</label>
+							<div class="layui-input-inline" style="width:186px;">
+								<input type="text" name="cycleDate[]" class="layui-input select-time-range" readonly placeholder="予定期間" lay-verify="required" lay-reqText="予定期間を選択してください">
+							</div>
+						</div>
+						<span class="layui-btn layui-btn-danger layui-btn-sm">削除</span>
+					</div>
+					{/eq}
+					{/volist}					
+				</div>
+				<span class="layui-btn layui-btn-xs add-flow" data-type="1">+ フェーズ追加</span>
+				<div style="padding:10px; margin-top:10px; font-size:12px; background-color:#fffcf0">
+					<p><strong>注意事項</strong></p>
+					<p>1. プロジェクトが流れる前に、プロジェクト情報を完了してください。</p>
+					<p>2. プロジェクトが開始された後、プロジェクト管理者、作成者、および責任者のみがプロジェクト情報を変更できます。</p>
+					<p>3. プロジェクト管理者、作成者、および責任者はプロジェクトフェーズの情報を変更できますが、すでに流れたフェーズを変更した場合、フローを再度進める必要があります。</p>
+				</div>
+			</td>
+		</tr>
+	</table>
+	<div class="pt-3">
+		<input type="hidden" name="id" value="0" />
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">確定</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool','employeepicker'];
+	function gouguInit() {
+		var form = layui.form,tool = layui.tool,table = layui.table,laydate = layui.laydate,employeepicker = layui.employeepicker;	
+		//日期范围
+		laydate.render({
+			elem: '#date',
+			range: ['#start_time', '#end_time'],
+			rangeLinked:true
+		});	
+		
+		//日期
+		lay('.select-time-range').each(function () {
+			laydate.render({
+				elem: this,
+				range: '至',
+				rangeLinked:true,
+				trigger: 'click'
+			});
+		});
+		
+		//选择关联合同	
+		$('.contract-picker').on('click', function () {
+			contractProject();
+		});
+		var contractTable;
+		function contractProject() {
+			layer.open({
+				title: '契約選択',
+				area: ['600px', '580px'],
+				type: 1,
+				content: '<div class="picker-table">\
+					<form class="layui-form pb-2">\
+						<div class="layui-input-inline" style="width:480px;">\
+						<input type="text" name="keywords"  placeholder="契約名称" class="layui-input" autocomplete="off" />\
+						</div>\
+						<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="search_form">検索</button>\
+					</form>\
+					<div id="contractTable"></div></div>',
+				success: function () {
+					contractTable = table.render({
+						elem: '#contractTable'
+						, url: '/contract/api/get_contract'
+						, page: true //开启分页
+						, limit: 10
+						, cols: [[
+							{ type: 'radio', title: '選択' }
+							, { field: 'id', width: 100, title: '番号', align: 'center' }
+							, { field: 'name', title: '契約名称' }
+						]]
+					});
+					//项目搜索提交
+					form.on('submit(search_form)', function (data) {
+						contractTable.reload({ where: { keywords: data.field.keywords }, page: { curr: 1 } });
+						return false;
+					});
+				},
+				btn: ['確定'],
+				btnAlign: 'c',
+				yes: function () {
+					var checkStatus = table.checkStatus(contractTable.config.id);
+					var data = checkStatus.data;
+					if (data.length > 0) {
+						$('[name="contract_name"]').val(data[0].name);
+						$('[name="contract_id"]').val(data[0].id);
+						$('[name="customer_id"]').val(data[0].customer_id);
+						layer.closeAll();
+					}
+					else {
+						layer.msg('契約を選択してください');
+						return false;
+					}
+				}
+			})
+		}
+    
+		
+		$('.add-flow').on('click',function(){
+			let len = $('#flowList').find('.layui-form-item').length;
+			let index = len+1;
+			let type = $(this).data('type');;
+			let tem=['<div class="layui-form-item layui-form-pane">\
+				<div class="layui-inline">\
+				  <label class="layui-form-label label-index">フェーズ'+index+'</label>\
+				  <div class="layui-input-inline" style="width:120px;">\
+					<select name="flowName[]" lay-filter="flowName" lay-verify="required" lay-reqText="フェーズ名称を選択してください">\
+						<option value="">選択してください</option>\
+						<option value="立案フェーズ">立案フェーズ</option>\
+						<option value="製品フェーズ">製品フェーズ</option>\
+						<option value="UIフェーズ">UIフェーズ</option>\
+						<option value="テストフェーズ">テストフェーズ</option>\
+						<option value="納品フェーズ">納品フェーズ</option>\
+						<option value="アフターサービスフェーズ">アフターサービスフェーズ</option>\
+						<option value="プロジェクト完了">プロジェクト完了</option>\
+					</select>\
+				  </div>\
+				</div>\
+				<div class="layui-inline">\
+				  <label class="layui-form-label">責任者</label>\
+				  <div class="layui-input-inline" style="width:120px;">\
+					<input type="text" name="chargeName[]" autocomplete="off" readonly placeholder="フェーズ責任者を選択してください" class="layui-input picker-one" lay-verify="required" lay-reqText="フェーズ責任者を選択してください">\
+					<input type="hidden" name="chargeIds[]">\
+				  </div>\
+				</div>\
+				<div class="layui-inline">\
+				  <label class="layui-form-label">メンバー</label>\
+				  <div class="layui-input-inline" style="width:168px;">\
+					<input type="text" name="membeNames[]" autocomplete="off" readonly placeholder="フェーズメンバーを選択してください（複数選択可）" class="layui-input picker-more" lay-verify="required" lay-reqText="フェーズメンバーを選択してください">\
+					<input type="hidden" name="membeIds[]">\
+				  </div>\
+				</div>\
+				<div class="layui-inline">\
+					<label class="layui-form-label">周期</label>\
+					<div class="layui-input-inline" style="width:186px;">\
+						<input type="text" name="cycleDate[]" class="layui-input select-time-range" readonly placeholder="開始日 ～ 終了日" lay-verify="required" lay-reqText="フェーズ周期を選択してください">\
+					</div>\
+				</div>\
+				<span class="layui-btn layui-btn-danger layui-btn-sm">消除</span>\
+			</div>',
+			'<div class="layui-form-item layui-form-pane">\
+				<div class="layui-inline">\
+				  <label class="layui-form-label label-index" style="width:120px;">フェーズ'+index+'</label>\
+				  <div class="layui-input-inline" style="width:120px;">\
+					<input type="text" name="flowName[]" autocomplete="off" placeholder="フェーズ名を入力してください" class="layui-input" lay-verify="required" lay-reqText="フェーズ名を入力してください">\
+				  </div>\
+				</div>\
+				<div class="layui-inline">\
+				  <label class="layui-form-label">責任者</label>\
+				  <div class="layui-input-inline" style="width:120px;">\
+					<input type="text" name="chargeNames[]" autocomplete="off" readonly placeholder="フェーズ責任者を選択してください" class="layui-input picker-one" lay-verify="required" lay-reqText="フェーズ責任者を選択してください">\
+					<input type="hidden" name="chargeIds[]">\
+				  </div>\
+				</div>\
+				<div class="layui-inline">\
+				  <label class="layui-form-label" style="width:130px;">メンバー</label>\
+				  <div class="layui-input-inline" style="width:250px;">\
+					<input type="text" name="membeNames[]" autocomplete="off" readonly placeholder="メンバーを選択してください（複数選択可）" class="layui-input picker-more" lay-verify="required" lay-reqText="メンバーを選択してください">\
+					<input type="hidden" name="membeIds[]">\
+				  </div>\
+				</div>\
+				<div class="layui-inline">\
+					<label class="layui-form-label" style="width:100px;">予定期間</label>\
+					<div class="layui-input-inline" style="width:186px;">\
+						<input type="text" name="cycleDate[]" class="layui-input select-time-range" readonly placeholder="予定期間" lay-verify="required" lay-reqText="予定期間を選択してください">\
+					</div>\
+				</div>\
+				<span class="layui-btn layui-btn-danger layui-btn-sm">削除</span>\
+			</div>'
+			];
+			$('#flowList').append(tem[type]);
+			form.render();
+			//日期
+			lay('.select-time-range').each(function () {
+				laydate.render({
+					elem: this,
+					range: '至',
+					trigger: 'click'
+				});
+			});
+		});
+		$('#flowList').on('click','.layui-btn-danger',function(){
+			$(this).parents('.layui-form-item').remove();
+			var items = $('.label-index').length;
+			if(items>0){
+				$('.label-index').each(function(index,item){
+					$(this).html('フェーズ'+(index+2));
+				})
+			}
+		});
+		
+		
+		//监听提交
+		form.on('submit(webform)', function (data) {
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose(1000);
+				}
+			}
+			tool.post("/project/index/add",data.field,callback);
+			return false;
+		});
+	}
+
+</script>
+{/block}

@@ -1,0 +1,101 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+    <div class="gg-form-bar border-t border-x" style="padding-bottom:12px;">
+        <button class="layui-btn layui-btn-sm add-menu">+ メニュー追加</button>
+    </div>
+    <div>
+        <table class="layui-hide" id="treeTable" lay-filter="treeTable"></table>
+    </div>
+</div>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">+ 权限グループを追加</button>
+    </div>
+</script>
+{/block}
+<!-- /本体 -->
+
+<!-- スクリプト -->
+{block name="script"}
+<script> 
+    const moduleInit = ['tool'];
+    function gouguInit() {
+        var treeTable = layui.treeTable, tool = layui.tool;
+         // treeTableのレンダリング
+        layui.trees = treeTable.render({
+            elem: '#treeTable',
+            url: "/home/rule/index",
+            tree: { // treeTable特定の属性セット
+                customName: { name: 'title' },
+                data: {},
+                view: { showIcon: false },
+                async: {},
+                callback: {}
+            },
+            cellMinWidth: 80,
+            cols: [[
+                { field: 'id', width: 80, title: 'ID番号', align: 'center' },
+                { field: 'sort', width: 60, title: 'ソート', align: 'center' },
+                { field: 'icon', title: 'アイコン', width: 150, align: 'center', templet: function(d) {
+                    var html = '<strong class="iconfont '+d.icon+'"></strong>';
+                    return html;
+                }},
+                { field: 'title', width: 200, title: '名称' },
+                { field: 'pid', title: '親ID', width: 80, align: 'center' },
+                { field: 'src', title: 'URL' },
+                {
+                    field: 'menu', width: 150, title: '区分', align: 'center', templet: function(d) {
+                        var html = '<span style="color:#fbbc05"></span>';
+                        if (d.menu == '1') {
+                            html = '<span style="color:#12bb37">メニュー</span>';
+                        }
+                        return html;
+                    }
+                },
+                { field: 'name', width: 110, title: '操作ログ名称', align: 'center' },
+                {
+                    width: 220, title: '操作', align: 'center',
+                    templet: function(d) {
+                        var html = '<span class="layui-btn-group"><button class="layui-btn layui-btn-xs" lay-event="add">子メニュー追加</button><button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">編集</button><button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">削除</button>';
+                        return html;
+                    }
+                }
+            ]],
+            page: false
+        });
+        // ヘッダーツールバーイベント
+        $('.add-menu').on('click', function() {
+            tool.side("/home/rule/add");
+            return;
+        });
+
+        // 操作ボタン
+        treeTable.on('tool(treeTable)', function(obj) {
+            console.log(obj);
+            if (obj.event === 'add') {
+                tool.side('/home/rule/add?pid=' + obj.data.id);
+                return;
+            }
+            if (obj.event === 'edit') {
+                tool.side('/home/rule/add?id=' + obj.data.id);
+                return;
+            }
+            if (obj.event === 'del') {
+                layer.confirm('削除してもよろしいですか？', { icon: 3, title: '確認' }, function(index) {
+                    let callback = function(e) {
+                        layer.msg(e.msg);
+                        if (e.code == 0) {
+                            obj.del();
+                        }
+                    }
+                    tool.delete("/home/rule/delete", { id: obj.data.id }, callback);
+                    layer.close(index);
+                });
+            }
+        });
+    }
+</script>
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,186 @@
+{extend name="../../base/view/common/base" /}
+
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<form class="layui-form gg-form-bar border-x" lay-filter="barsearchform" id="barsearchform">
+    <div class="layui-input-inline" style="width:240px;">
+      <select name="status" lay-reqText="ステータスを選択してください">
+        <option value="">ステータスを選択してください</option>
+        <option value="-1" style="color: red;">廃棄</option>
+        <option value="0" style="color: green;">正常</option>
+        <option value="1" style="color: red;">故障</option>
+        <option value="2" style="color: red;">修理</option>
+        <option value="3" style="color: yellow;">整備</option>
+        <option value="4" style="color: yellow;">貸出</option>
+        <option value="5" style="color: green;">返却</option>
+      </select>
+		</div>
+    <div class="layui-input-inline" style="width:240px;">
+			<input type="hidden" name="tab" value="0" />
+			<input type="text" name="keywords" placeholder="キーワードを入力" class="layui-input" autocomplete="off" />
+		</div>
+		<div class="layui-input-inline" style="width:180px;">
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+			<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+		</div>
+	</form>
+</div>
+<div class="p-3">
+  <table class="layui-hide" id="test" lay-filter="test"></table>
+  
+</div>
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm addNew" type="button">
+      + PC追加
+    </button>
+  </div>
+</script>
+{/block}
+<!-- /主体 -->
+<!-- スクリプト -->
+{block name="script"}
+<script>
+  const moduleInit = ["tool"];
+  function gouguInit() {
+    var table = layui.table,
+      tool = layui.tool,
+      form = layui.form;
+    layui.pageTable = table.render({
+      elem: "#test",
+      toolbar: "#toolbarDemo",
+      defaultToolbar: false,
+      title: "PCリスト",
+      url: "/adm/pc/pc_cate",
+      page: false,
+      cellMinWidth: 80,
+      cols: [
+        [
+          {
+            field: "management_number",
+            width: 80,
+            title: "ID",
+            align: "center",
+            title: "管理番号",
+          },
+          { field: "name", title: "名称" },
+          { field: "serial_number", title: "シリアル番号" },
+          { field: "type", title: "種類" },
+          { field: "specs", title: "スペック種類" },
+          { field: "manufacturer", title: "メーカー" },
+          { field: "mac_address", title: "MACアドレス" },
+          //{ field: "ip_address", title: "IPアドレス" },
+          { field: "purchase_date", title: "購入日" },
+          { field: "warranty_end_date", title: "保証終了日" },
+          { field: "user_name", title: "使用者" },
+          { field: "start_date", title: "使用開始日" },
+          { field: "end_date", title: "使用終了日" },
+          {
+            field: "status",
+            title: "ステータス",
+            width: 100,
+            align: "center",
+            templet: function (d) {
+              switch (d.status) {
+                case -1:
+                  return '<span class="red">廃棄</span>';
+                case 0:
+                  return '<span class="green">正常</span>';
+                case 1:
+                  return '<span class="red">故障</span>';
+                case 2:
+                  return '<span class="red">修理</span>';
+                case 3:
+                  return '<span class="yellow">整備</span>';
+                case 4:
+                  return '<span class="yellow">貸出</span>';
+                case 5:
+                  return '<span class="green">返却</span>';
+              }
+            },
+          },
+          {
+            width: 100,
+            title: "操作",
+            align: "center",
+            templet: function (d) {
+              var html = "";
+              var btn =
+                '<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">編集</a>';
+              html = '<div class="layui-btn-group">' + btn  + "</div>";
+              return html;
+            },
+          },
+        ],
+      ],
+    });
+
+    table.on("tool(test)", function (obj) {
+      if (obj.event === "edit") {
+        addExpense(obj.data.management_number, obj.data);
+      }
+      if (obj.event === "disable") {
+        layer.confirm(
+          "この車両を無効しますか？",
+          { icon: 3, title: "確認" },
+          function (index) {
+            let callback = function (e) {
+              layer.msg(e.msg);
+              if (e.code == 0) {
+                layui.pageTable.reload();
+              }
+            };
+            tool.post(
+              "/adm/car/car_cate_check",
+              { id: obj.data.id, status: 0 },
+              callback
+            );
+            layer.close(index);
+          }
+        );
+      }
+      if (obj.event === "open") {
+        layer.confirm(
+          "この車両を有効にしますか？",
+          { icon: 3, title: "確認" },
+          function (index) {
+            let callback = function (e) {
+              layer.msg(emsg);
+              if (e.code == 0) {
+                layui.pageTable.reload();
+              }
+            };
+            tool.post(
+              "/adm/car/car_cate_check",
+              { id: obj.data.id, status: 1 },
+              callback
+            );
+            layer.close(index);
+          }
+        );
+      }
+    });
+
+    $("body").on("click", ".addNew", function () {
+      addExpense(0, "");
+    });
+
+    function addExpense(id, data) {
+      tool.side("/adm/pc/add?id=" + id);
+    }
+
+    //监听搜索提交
+		form.on('submit(webform)', function(data) {
+      console.log(data.field);
+			layui.pageTable.reload({
+				where: data.field,
+				page: {curr: 1}
+			});
+			return false;
+		});
+  }
+</script>
+
+{/block}
+<!-- /スクリプト -->

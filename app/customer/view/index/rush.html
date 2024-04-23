@@ -1,0 +1,118 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<div class="layui-row gg-form-bar border-x border-t">
+		<div class="layui-input-inline">
+			<button class="layui-btn layui-btn-danger" lay-submit="" lay-filter="webform">顧客探し</button>
+		</div>
+    </div>
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+<script type="text/html" id="toolbarDemo">
+  <div class="red">一回クリックして10名顧客の詳細を見えます，毎日の探し上限は<strong class="mx-1">{$max_num}</strong>名顧客です，今日は<strong class="mx-1" id="count">{$count}</strong>名客户を探しました</div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool ,form = layui.form;
+		layui.pageTable = table.render({
+			elem: '#test',
+			title: '顧客探しリスク',
+			toolbar: '#toolbarDemo',
+			defaultToolbar: false,
+			url: "/customer/index/rush", //数据接口
+			cellMinWidth: 80,
+			page: false, //开启分页
+			limit: 10,
+			cols: [
+				[ //表头
+					{
+						field: 'id',title: '番号',align: 'center',width: 80,templet: function (d) {
+							return'C' + d.id;
+						}
+					},{
+						field: 'name',
+						title: '顧客名',
+						templet: '<div><a data-href="/customer/index/view/id/{{d.id}}.html" class="side-a">{{d.name}}</a></div>'
+					},{
+						field: 'user',
+						title: '連絡先',
+						align: 'center',
+						width: 80
+					},{
+						field: 'mobile',
+						title: '電話番号',
+						align: 'center',
+						width: 100
+					},{
+						field: 'qq',
+						title: 'QQ号码',
+						align: 'center',
+						width: 100
+					},{
+						field: 'wechat',
+						title: '微信号',
+						align: 'center',
+						width: 90
+					},{
+						field: 'source',
+						title: 'チャネルソース',
+						align: 'center',
+						width: 160
+					}, {
+						field: 'industry',
+						title: '所属業界',
+						align: 'center',
+						width: 120
+					},{
+						field: 'right',
+						fixed:'right',
+						title: '操作',
+						width: 80,
+						align: 'center',
+						templet: function (d) {
+							var btn='<span class="layui-btn layui-btn-xs" lay-event="get">顧客を受け取る</span>';
+							return btn;
+						}						
+					}
+				]
+			]
+		});
+		
+		//监听行工具事件
+		table.on('tool(test)', function(obj) {
+			var data = obj.data;
+			if (obj.event === 'get') {
+				layer.confirm('この顧客を受け取りますか?', {
+					icon: 3,
+					title: 'ヒント'
+				}, function(index) {
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							layui.pageTable.reload();
+							let count =$('#count').text();
+							$('#count').html(++count);
+						}
+					}
+					tool.post("/customer/index/get", {id: data.id}, callback);
+					layer.close(index);
+				});
+			}
+		});
+
+		//监听搜索提交
+		form.on('submit(webform)', function(data) {
+			layui.pageTable.reload();
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

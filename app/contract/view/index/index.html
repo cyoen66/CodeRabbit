@@ -1,0 +1,332 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<form class="layui-form gg-form-bar border-x border-t" lay-filter="barsearchform">
+		<div class="layui-input-inline" style="width:150px;">
+			<select name="cate_id">
+				<option value="">契約類型を選択してください</option>
+				{volist name=":contract_cate()" id="v"}
+				<option value="{$v.id}">{$v.title}</option>
+				{/volist}
+			</select>
+		</div>
+		<div class="layui-input-inline" style="width:150px;">
+			<select name="type">
+				<option value="">契約性質を選択してください</option>
+				<option value="1">通常契約</option>
+				<option value="2">フレーム契約</option>
+				<option value="3">追加協定</option>
+				<option value="4">他の契約</option>
+			</select>
+		</div>
+		<div class="layui-input-inline" style="width:150px;">
+			<select name="check_status">
+				<option value="">契約ステータスを選択してください</option>
+				<option value="0">承認待ち</option>
+				<option value="1">承認中</option>
+				<option value="2">承認</option>
+				<option value="3">拒否</option>
+				<option value="4">キャンセル</option>
+				<option value="5">中止</option>
+				<option value="6">廃棄</option>
+			</select>
+		</div>
+		<div class="layui-input-inline" style="width:240px;">
+			<input type="text" name="keywords" placeholder="キーワードを入力してください" class="layui-input" autocomplete="off" />
+		</div>
+		<div class="layui-input-inline" style="width:180px;">
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+			<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+		</div>
+	</form>
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+
+<script type="text/html" id="toolbarDemo">
+<div class="layui-btn-container">
+   <span class="layui-btn layui-btn-sm" title="契約追加" lay-event="add">+ 契約追加</span>
+</div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool ,form = layui.form;
+		layui.pageTable = table.render({
+			elem: '#test',
+			title: '契約リスト',
+			toolbar: '#toolbarDemo',
+			defaultToolbar:['filter', {title:'エクスポート',layEvent: 'LAYTABLE_EXCEL',icon: 'layui-icon-export'}],	
+			url: "/contract/index/index", //数据接口
+			cellMinWidth: 80,
+			page: true, //开启分页
+			limit: 20,
+			cols: [
+				[ //表头
+					{
+						field: 'id',
+						title: '番号',
+						align: 'center',
+						width: 80
+					},{ field: 'check_status', title: 'ステータス', align: 'center', width: 100, templet: function (d) {
+						var html = '<span class="layui-btn layui-btn-xs layui-bg-' + d.check_status + '">' + d.status_name + '</span>';
+						return html;
+						}
+					},{
+						field: 'code',
+						title: '契約番号',
+						width: 160
+					},{
+						field: 'name',
+						title: 'タイトル',
+						minWidth:240,
+						templet: '<div><a data-href="/contract/index/view/id/{{d.id}}.html" class="side-a">{{d.name}}</a></div>'
+					}, {
+						field: 'cate_title',
+						title: '契約類型',
+						align: 'center',
+						width: 100
+					}, {
+						field: 'type_name',
+						title: '規約性質',
+						align: 'center',
+						width: 80,
+						templet: function (d) {
+							var html = '<span class="layui-color-' + d.type_a + '">' + d.type_name + '</span>';
+							return html;
+						}
+					},{
+						field: 'interval_time',
+						title: '契約有効時間',
+						align: 'center',
+						width: 248,
+						templet: function (d) {
+						var html = d.interval_time;
+						if (d.delay > 0 && d.delay < 30) {
+							html += '<span class="red ml-1" style="font-size:12px;">' + d.delay + '明後日時間切れ</span>';
+						}
+						if (d.delay == 0) {
+							html += '<span class="red ml-1" style="font-size:12px;">時間切れ</span>';
+						}
+						return html;
+					}
+					},{
+						field: 'cost',
+						title: '契約金額/円',
+						align: 'right',
+						width: 100
+					}, {
+						field: 'sign_name',
+						title: 'サイン者',
+						align: 'center',
+						width: 80
+					},{
+						field: 'keeper_name',
+						title: '保管者',
+						align: 'center',
+						width: 80
+					}, {
+						field: 'sign_time',
+						title: '契約時間',
+						align: 'center',
+						width: 100
+					}, {
+						field: 'right',
+						fixed:'right',
+						title: '操作',
+						width: 100,
+						align: 'center',
+						templet: function (d) {
+							var html = '<div class="layui-btn-group">';
+							var btn0='<span class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">表示</span>';
+							var btn1='<span class="layui-btn layui-btn-xs" lay-event="edit">編集</span>';
+							var btn2='<span class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">消除</span>';
+							if(d.check_status==0 || d.check_status==4){
+								return html+btn1+btn2+'</div>';
+							}
+							else{
+								return btn0;
+							}
+						}						
+					}
+				]
+			]
+		});
+		
+		//表头工具栏事件
+		table.on('toolbar(test)', function(obj){
+			if (obj.event === 'add') {
+				selectType();
+				return;
+			}
+			if(obj.event === 'LAYTABLE_EXCEL'){
+				var formSelect = form.val('barsearchform');
+				formSelect.limit=99999;
+				$.ajax({
+					url: '/contract/index/index',
+					data: formSelect,
+					success:function(res){
+						table.exportFile('test', res.data,'xls');
+					}
+				});
+				return;
+			}
+		});
+		//监听行工具事件
+		table.on('tool(test)', function(obj) {
+			var data = obj.data;
+			if(obj.event === 'view'){
+				tool.side('/contract/index/view?id='+data.id);
+				return;
+			}
+			
+			if(obj.event === 'edit'){
+				tool.side('/contract/index/add?id='+data.id);
+				return;
+			}
+			if (obj.event === 'del') {
+				layer.confirm('消除しますか?', {
+					icon: 3,
+					title: 'ヒント'
+				}, function(index) {
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							obj.del();
+						}
+					}
+					tool.delete("/contract/index/delete", {id: data.id}, callback);
+					layer.close(index);
+				});
+			}
+		});
+		
+		//选择合同性质	
+		var table_a;
+		function selectType() {
+			layer.open({
+				title: '契約の性質を選択してください',
+				type:1,
+				area: ['480px', '336px'],
+				content: '<div class="picker-table"><div id="boxselect"></div></div>',
+				success: function() {
+					table_a = table.render({
+						elem: '#boxselect',
+						cols: [
+							[{
+								type: 'radio',
+								title: '選択',
+								width: 100
+							}, {
+								field: 'title',
+								title: '名称'
+							}]
+						],
+						data: [{
+							"type": "1",
+							"title": "通常契約"
+						},{
+							"type": "2",
+							"title": "フレーム契約"
+						}, {
+							"type": "3",
+							"title": "追加協定"
+						}, {
+							"type": "4",
+							"title": "他の契約"
+						}]
+					});
+				},
+				btn:['確定'],
+				yes: function(index) {
+					var checkStatus = table.checkStatus(table_a.config.id);
+					var data = checkStatus.data;
+					if (data.length > 0) {
+						if(data[0].type == 3){
+							selectCharge(data[0].type);
+						}
+						else{
+							tool.side("/contract/index/add?type="+data[0].type);
+						}
+						layer.close(index);
+					}
+					else{
+						layer.msg('契約の性質を選択してください');
+					}
+				}
+			})
+		}		
+		//选择母合同
+		var table_b;
+		function selectCharge(type){
+			layer.open({
+				title:'上位契約を選択してください',
+				area:['680px','580px'],
+				type:1,
+				content:'<div class="picker-table">\
+				<form class="layui-form pb-2">\
+					<div class="layui-input-inline" style="width:500px;">\
+					<input type="text" name="keywords"  placeholder="タイトル" class="layui-input" autocomplete="off" />\
+					</div>\
+					<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="search_form">検索</button>\
+				</form>\
+				<div id="boxcontract"></div></div>',
+				success:function(){
+					table_b=table.render({
+						elem: '#boxcontract'
+						,url:'/contract/api/get_contract'
+						,page: true //开启分页
+						,limit: 10
+						,cols: [[
+						  {type:'radio',title: '選択'}
+						  ,{field:'name', title: 'タイトル'}
+						  ,{field:'sign_name', width:90, title: 'サイン者',align:'center'}
+						  ,{field:'sign_time', width:110, title: '契約日付',align:'center'}
+						]]
+					});	
+
+					//搜索提交
+					form.on('submit(search_form)', function(data){
+						table_b.reload({where:{keywords:data.field.keywords},page:{curr:1}});
+						return false;
+					});		  
+				},
+				btn: ['確定'],
+				yes: function(index){
+					var checkStatus = table.checkStatus(table_b.config.id);
+					var data = checkStatus.data;
+					if(data.length>0){
+						tool.side("/contract/index/add?type="+type+"&pid="+data[0].id);
+						layer.close(index);
+					}else{
+						layer.msg('契約を選択してください');
+						return false;
+					}
+				}
+			})		
+		}
+
+		//监听搜索提交
+		form.on('submit(webform)', function(data) {
+			layui.pageTable.reload({
+				where: {
+					keywords: data.field.keywords,
+					cate_id: data.field.cate_id,
+					type: data.field.type,
+					check_status: data.field.check_status
+				},
+				page: {
+					curr: 1
+				}
+			});
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,86 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<form class="layui-form gg-form-bar border-t border-x">
+		<div class="layui-input-inline">
+			<input type="text" name="keywords" placeholder=" キーワード" class="layui-input" autocomplete="off"/>
+		</div>
+		<div class="layui-input-inline" style="width:200px;">
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i> 検索</button>
+			<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset"> クリア</button>
+		</div>
+	</form>
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+	<button class="layui-btn layui-btn-sm" lay-event="add">+ 人事異動追加</button>
+  </div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool ,form = layui.form;
+		layui.pageTable = table.render({
+			elem: '#test'
+			, toolbar: '#toolbarDemo'
+			,defaultToolbar: false
+			, url: "/user/personal/change"
+			, page: true //ページネーションをオンにする
+			, limit: 20
+			, cols: [[
+				{ field: 'id', width: 80, title: '連番', align: 'center' }
+				, { field: 'name', width: 160, title: '社員名', align: 'center'}
+				, { field: 'adepartment', title: '異動前部門', align: 'center'}
+				, { field: 'bdepartment', title: '異動後部門',align: 'center'}
+				, { field: 'move_time', width: 160, title: '異動日', align: 'center'}
+				, { field: 'admin', title: '異動更新者',align: 'center'}
+				, {
+					width: 80, title: '操作', align: 'center'
+					, templet: function (d) {
+						var html = '';
+						var delBtn = '<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">編集</button>';
+						return delBtn;
+					}
+				}
+			]]
+		});
+		
+		//行ツールイベントの監視
+		table.on('tool(test)', function(obj){
+			var data = obj.data;
+			if(obj.event === 'edit'){
+				tool.side('/user/personal/change_add?id='+data.id);
+				return;
+			}
+		});
+		
+		//ヘッダーツールバーイベント
+		table.on('toolbar(test)', function(obj){
+			if (obj.event === 'add') {
+				tool.side("/user/personal/change_add");
+				return;
+			}
+		});
+
+		//検索の送信を監視する
+		form.on('submit(webform)', function(data){
+			if(data.field.keywords) {
+				layui.pageTable.reload({where:{keywords:data.field.keywords},page:{curr:1}});			  
+			}
+			else{
+				location.reload();
+			}
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="renderer" content="webkit"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+{block name="meta"}
+	<link rel="mobile-prefetch" href=""/>
+{/block}
+{block name="title"}
+	<title>{:get_system_config('web','admin_title')}</title>		
+{/block}
+{block name="keywords"}
+	<meta name="keywords" content="{:get_system_config('web','keywords')}"/>
+	<meta name="description" content="{:get_system_config('web','desc')}"/>
+{/block}
+{block name="css"}
+	<link rel="stylesheet" href="{__GOUGU__}/gougu/css/gougu.css?v={:get_system_config('web','version')}" media="all">
+{/block}
+{block name="style"}{/block}
+<script type="text/javascript" src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+<link href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
+<script>
+	const login_admin={$login_admin.id};
+</script>
+{block name="js"}{/block}
+</head>
+<body class="main-body">
+	<!-- 主体 -->
+	{block name="body"}{/block}
+	<!-- /主体 -->
+
+	<!-- 底部 -->
+	{block name="footer"}{/block}
+	<!-- /底部 -->
+	
+	<!-- 脚本 -->
+	{block name="script"}{/block}
+	<!-- /脚本 -->
+	<script src="{__GOUGU__}/layui/layui.js"></script>
+	<script src="{__GOUGU__}/gougu/gouguInit.js"></script>
+	<script src="{__GOUGU__}/yfc/common.js"></script>
+	<script type="text/javascript">
+		layui.use(["laydate"], function () {
+		  // laydate default config
+		  var laydate = layui.laydate;
+			laydate.set({
+			  lang: 'ja',
+			});
+		  });
+	
+	  </script>
+	<!-- 统计代码 -->
+	{block name="code"}{/block}
+	<!-- /统计代码 -->
+</body>
+</html>

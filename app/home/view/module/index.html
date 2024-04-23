@@ -1,0 +1,86 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<table cellspacing="0" cellpadding="0" border="0" class="layui-table layui-table-form">
+		<tr>
+			<th style="text-align: center; background-color:#FAFAFA">モジュール名</th>
+			<th style="text-align: center; background-color:#FAFAFA">モジュールディレクトリ</th>
+			<th style="text-align: center; background-color:#FAFAFA">機能説明</th>
+			<th style="text-align: center; background-color:#FAFAFA">類型</th>
+			<th style="text-align: center; background-color:#FAFAFA">開発元</th>
+			<!-- <th style="text-align: center; background-color:#FAFAFA">ステータス</th>
+			<th style="text-align: center;  background-color:#FAFAFA; width:90px">操作</th> -->
+		</tr>
+		{empty name="module"}
+		<tr>
+			<td colspan="7" align="center">データがありません</td>
+		</tr>
+		{/empty}
+		{volist name="module" id="vo" key="k"}
+		<tr>
+			<td align="center">{$vo.title}</td>
+			<td>app/{$vo.name}</td>
+			<td>{$vo.title}</td>
+			<td align="center">
+				{eq name="$vo.type" value="1"}システムモジュール{/eq}
+				{eq name="$vo.type" value="2"}一般モジュール{/eq}
+			</td>
+			<td align="center">
+				{eq name="$vo.sourse" value="1"}YFC{/eq}
+				{eq name="$vo.sourse" value="2"}サードパーティ{/eq}
+			</td>
+		</tr>
+		{/volist}
+	</table>
+</div>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var tool = layui.tool;
+
+		$('body').on('click', '.install', function () {
+			let name = $(this).data('name');
+			layer.confirm('このモジュールをインストールしますか？', { icon: 3, title: 'ヒント' }, function (index) {
+				//layer.msg('この機能は現在内部テスト中です...');
+				//return false;
+				let callback = function (e) {
+					layer.msg(e.msg);
+					if (e.code == 0) {
+						layer.close(index);
+						location.reload();
+					}
+				}
+				tool.post("/home/module/install", {name: name}, callback);
+				layer.close(index);
+			});
+		});
+		$('body').on('click', '.delete', function () {
+			let name = $(this).data('name');
+			let type = $(this).data('type');
+			if(type==1){
+				layer.msg('システムモジュールはアンインストールできません');
+				return false;
+			}
+			layer.confirm('このモジュールをアンインストールしますか？', { icon: 3, title: 'ヒント' }, function (index) {
+				let callback = function (e) {
+					layer.msg(e.msg);
+					if (e.code == 0) {
+						layer.close(index);
+						location.reload();
+					}
+				}
+				tool.post("/home/module/uninstall",{name: name}, callback);
+				layer.close(index);
+			});
+		});
+
+	}
+</script>
+{/block}
+<!-- /脚本 -->

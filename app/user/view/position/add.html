@@ -1,0 +1,119 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	
+	{if condition="$id eq 0"}
+	<h3 class="pb-3">役職新規</h3>
+	<!-- 新規追加入力フォーム -->
+	<table class="layui-table">
+		<tr>
+			<td class="layui-td-gray">役職名称<font>*</font></td>
+			<td>
+				<input type="text" name="title" lay-verify="required" autocomplete="off" placeholder="役職名称を入力してください" lay-reqText="役職名称を入力してください" class="layui-input">
+			</td>
+			<!-- 単価を管理しないので、表示させない-->
+			<!-- <td class="layui-td-gray-3">単価(時間)<font>*</font></td>
+			<td>
+				<input type="text" name="work_price" lay-verify="required|number" placeholder="単価(時間)を入力してください。" lay-reqText="単価(時間)を入力してください。" autocomplete="off" class="layui-input">
+			</td> -->
+			<td class="layui-td-gray-2">ステータス<font>*</font></td>
+			<td colspan="3">
+				<input type="radio" name="status" value="1" title="有効" checked>
+				<input type="radio" name="status" value="0" title="無効">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">権限ロール<font>*</font></td>
+			<td colspan="3">
+				{volist name="$group" id="v"}
+				<input type="checkbox" name="group_id[]" title="{$v.title}" value="{$v.id}" lay-skin="primary">
+				{/volist}
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">備考</td>
+			<td colspan="3">
+				<textarea name="remark" placeholder="備考を入力してください。" class="layui-textarea"></textarea>
+			</td>
+		</tr>
+	</table>
+	{else/}
+	<h3 class="pb-3">役職変更</h3>
+	<!-- 変更更新フォーム -->
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">役職名称<font>*</font></td>
+			<td>
+				<input type="text" name="title" value="{$detail.title}" lay-verify="required" autocomplete="off" placeholder="役職名称を入力してください" lay-reqText="役職名称を入力してください" class="layui-input">
+			</td>
+			<!--単価を管理しないので、表示させない-->
+			<!-- <td class="layui-td-gray-3">単価(時間)<font>*</font></td>
+			<td>
+				<input type="text" name="work_price" value="{$detail.work_price}" lay-verify="required|number" placeholder="単価(時間)を入力してください。" lay-reqText="単価(時間)を入力してください。" autocomplete="off" class="layui-input">
+			</td> -->
+			<td class="layui-td-gray">状態<font>*</font></td>
+			<td colspan="3">
+				<input type="radio" name="status" value="1" title="有効" {eq name="$detail.status" value="1"}checked{/eq}>
+				<input type="radio" name="status" value="0" title="無効" {eq name="$detail.status" value="0"}checked{/eq}>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">権限ロール<font>*</font></td>
+			<td colspan="3">
+			{volist name="$group" id="v"}
+				<input type="checkbox" name="group_id[]" title="{$v.title}" value="{$v.id}" {eq name="$v.checked" value="1" }checked{/eq} lay-skin="primary">
+			{/volist}
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">備考</td>
+			<td colspan="3">
+				<textarea name="remark" placeholder="備考を入力してください。" class="layui-textarea">{$detail.remark}</textarea>
+			</td>
+		</tr>
+	</table>
+	{/if}
+	<div class="py-3">
+		<input type="hidden" name="id" value="{$id}">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool;
+		form.on('submit(webform)', function(data){
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					setTimeout(function () {
+						parent.location.reload();
+					}, 1000);					
+				}
+			}
+			tool.post("/user/position/add", data.field, callback);
+			return false;
+		});
+		//监听提交
+		form.on('submit(webform)', function(data){
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose(1000);
+				}
+			}
+			tool.post("/user/position/add", data.field, callback);
+			return false;
+		});
+	}
+
+</script>
+{/block}
+<!-- /脚本 -->

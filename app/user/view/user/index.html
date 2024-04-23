@@ -1,0 +1,448 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+  <style>
+	.layui-tree-entry{font-size:15px; line-height:24px}
+	.layui-tree-set{padding:2px 0}
+	.layui-tree-iconClick .layui-icon{color:#1E9FFF}
+	.layui-icon layui-icon-file{font-size:16px;}
+	.layui-tree-icon {height: 14px;line-height: 14px; width: 14px; text-align: center;border: 1px solid #1E9FFF; color:#1E9FFF}
+	.layui-tree-line .layui-tree-set .layui-tree-set:after{top:18px;}
+	.tree-left{width:200px; float:left; height:calc(100% - 30px); overflow: scroll; border:1px solid #eeeeee; background-color:#FAFAFA; padding:12px 12px 12px 5px;}
+	.tree-left h3{font-size:16px; height:30px; padding-left:10px; font-weight:800}
+	
+	.gougu-upload-files{background-color: #ffffff; border:1px solid #e4e7ed;color: #c0c4cc;cursor: not-allowed; padding:0 12px; width:180px; box-sizing: border-box; display: inline-block; font-size: inherit; height: 38px; line-height: 35px; margin-right:8px; border-radius:2px;}
+	.gougu-upload-tips{color:#969696}
+	.layui-form-item{margin-bottom:8px;}
+	.layui-input-block{min-height:24px;}
+  </style>
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3" style="height:100%; box-sizing: border-box;">
+	<div class="tree-left">
+		<h3>組織ツリー</h3>
+		<div id="depament"></div>
+	</div>
+	<div class="body-table" style="margin-left:228px; overflow:hidden;">
+		<form class="layui-form gg-form-bar border-t border-x" lay-filter="barsearchform">
+			<div class="layui-input-inline" style="width:136px">
+				<select name="status">
+					<option value="">社員状態</option>
+					<option value="1">有効</option>
+					<option value="0">無効</option>
+				</select>
+			</div>
+			<div class="layui-input-inline" style="width:136px">
+				<select name="type">
+					<option value="">社員種類</option>
+					<option value="1">正社員</option>
+					<option value="2">個人事業主</option>
+					<option value="3">契約社員</option>
+				</select>
+			</div>
+			<div class="layui-input-inline" style="width:240px">
+				<input type="text" name="keywords" placeholder="社員ID、名前または電話番号" class="layui-input" autocomplete="off" />
+			</div>
+			<div class="layui-input-inline" style="width:200px;">
+				<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+				<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+			</div>
+		</form>
+		<table class="layui-hide" id="test" lay-filter="test"></table>
+	</div>
+</div>
+
+<script type="text/html" id="thumb">
+	<img src="{{d.thumb}}" width="30" height="30" />
+</script>
+<script type="text/html" id="toolbara">
+	<div class="layui-btn-group">
+		<button class="layui-btn layui-btn-sm" lay-event="add"><i class="layui-icon">&#xe61f;</i>社員追加</button>
+		<button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="disable"><i class="layui-icon">&#x1006;</i>無効にする</button>
+		<button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="recovery"><i class="layui-icon">&#xe605;</i>有効にする</button>
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="import"><i class="layui-icon">&#xe66f;</i>インポート</button>
+	</div>
+</script>
+
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool','tablePlus'];
+	function gouguInit() {
+		var table = layui.tablePlus, tool = layui.tool,tree = layui.tree,form = layui.form,upload = layui.upload;			
+		$.ajax({
+			url: "/api/index/get_department_tree",
+			type:'get',
+			success:function(res){					
+				//仅节点左侧图标控制收缩
+				tree.render({
+					elem: '#depament',
+					data: res.trees,
+					onlyIconControl: true,  //是否仅允许节点左侧图标控制展开收缩
+					click: function(obj){
+						//layer.msg(JSON.stringify(obj.data));
+						layui.pageTable.reload({
+						   where: {did: obj.data.id}
+						   ,page:{curr:1}
+						});
+						$('[name="keywords"]').val('');
+						$('[name="status"]').val('');
+						$('[name="type"]').val('');
+						layui.form.render('select');
+					}
+				});	
+			}
+		})		
+		
+		let uploadFiles;
+		function clearFile() {
+			for (let x in uploadFiles) {
+				delete uploadFiles[x];
+			}
+			$('#gougu-upload-choosed').html('');
+		}
+		function uploadImport(){
+			layer.open({
+				'title':'社員情報インポート',
+				'type':1,
+				'area': ['640px', '360px'],
+				'content':'<div class="layui-form p-3">\
+						<div id="uploadType1">\
+							<div class="layui-form-item">\
+								<label class="layui-form-label">ファイル：</label>\
+								<div class="layui-input-block">\
+									<span class="gougu-upload-files">.xls,.xlsx</span><button type="button" class="layui-btn layui-btn-normal" id="uploadSelect">ファイル選択</button><a href="/static/home/file/importUser.xlsx" class="layui-btn ml-4">テンプレートダウンロード</a>\
+								</div>\
+							</div>\
+							<div class="layui-form-item">\
+								<label class="layui-form-label"></label>\
+								<div class="layui-input-block">\
+									<span class="gougu-upload-tips">1、システム管理者だけは社員インポートができます；<br>2、.xls、.xlsxのみがアップロードできます；<br>3、結合されたセルにデータを配置しないでください；<br>4、アップロードファイルのサイズは2MBが超えないでください，データ件数は3000以内<br>5、失敗した場合は、役職名どの情報は既に登録されていますかを確認してください</span>\
+								</div>\
+							</div>\
+							<div class="layui-form-item">\
+								<label class="layui-form-label"></label>\
+								<div class="layui-input-block green" id="gougu-upload-choosed"></div>\
+							</div>\
+							<div class="layui-form-item">\
+								<label class="layui-form-label"></label>\
+								<div class="layui-input-block red" id="gougu-upload-note"></div>\
+							</div>\
+							<div class="layui-form-item layui-form-item-sm">\
+								<label class="layui-form-label"></label>\
+								<div class="layui-input-block">\
+									<button type="button" class="layui-btn" id="uploadAjax">上传并导入</button>\
+								</div>\
+							</div>\
+						</div> \
+				</div>',
+				success: function(layero, idx){
+					form.render();
+					//选文件
+					let uploadImport = upload.render({
+						elem: '#uploadSelect'
+						,url: '/api/import/import_admin'
+						,auto: false
+						,accept: 'file' //普通文件
+						,acceptMime: 'application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // 此处设置上传的文件格式
+						,exts: 'xls|xlsx' //只允许上传文件格式
+						,bindAction: '#uploadAjax'
+						,choose: function(obj){
+							uploadFiles = obj.pushFile();
+							// 清空,防止多次上传
+							clearFile();
+							obj.preview(function(index, file, result){
+								obj.pushFile();// 再添加
+								$('#gougu-upload-choosed').html('選択した：'+file.name);
+							});
+						}
+						,before: function(obj){
+						}
+						,progress: function(n, elem, e){
+							$('#gougu-upload-note').html('アップロード中...');
+							if(n==100){
+								$('#gougu-upload-note').html('インポート中...');
+							}
+						}
+						,error: function(index, upload){
+							clearFile();
+							$('#gougu-upload-note').html('インポートが失敗しました、ファイル中身を確認してください');
+						}
+						,done: function(res, index, upload){
+							clearFile();
+							layer.msg(res.msg);
+							$('#gougu-upload-note').html(res.msg);
+							if(res.code==0){
+								layer.close(idx);
+								layui.pageTable.reload();
+							}						
+						}
+					});
+				}
+			});	
+		}
+		
+		layui.pageTable = table.render({
+			elem: '#test',
+			title: '社員一覧',
+			toolbar: '#toolbara',
+			defaultToolbar: [],
+			is_excel:true,
+			url: "/user/user/index", //数据接口	
+			page: true, //开启分页
+			limit: 20,
+			height: 'full-85',
+			cols: [
+				[
+					{type:'checkbox',fixed:'left'},
+					{
+						field: 'id',
+						title: 'ID号',
+						align: 'center',
+						width: 80
+					}, {
+						field: 'status',
+						title: '状態',
+						align: 'center',
+						width: 80,
+						templet: function (d) {
+							var html = '<span class="layui-badge layui-bg-green">有効</span>';
+							if(d.status == 2){
+								html = '<span class="layui-badge layui-bg-orange">離職</span>'
+							}
+							else if(d.status == 0){
+								html = '<span class="layui-badge">無効</span>'
+							}
+							return html;
+						}
+					},{
+						field: 'type',
+						title: '社員種類',
+						align: 'center',
+						width: 80,
+						templet: function (d) {
+							var html = '<span style="color:#393D49">正社員</span>';
+							if(d.type == 2){
+								html = '<span style="color:#01AAED">個人事業主</span>'
+							}
+							else if(d.type == 3){
+								html = '<span style="color:#5FB878">契約社員</span>'
+							}
+							return html;
+						}
+					}, {
+						field: 'username',
+						title: '社員ID',
+						width: 132
+					}, {
+						field: 'thumb',
+						title: '写真',
+						toolbar: '#thumb',
+						align: 'center',
+						width: 60
+					}, {
+						field: 'name',
+						title: '名前',
+						align: 'center',
+						width: 80
+					},{
+						field: 'mobile',
+						title: '電話番号',
+						align: 'center',
+						width: 120
+					},{
+						field: 'email',
+						title: 'メールアドレス',
+						width: 200
+					},{
+						field: 'sex',
+						title: '性別',
+						align: 'center',
+						width: 60,
+						templet: function (d) {
+							var html = '未知';
+							if(d.sex == 1){
+								html = '男'
+							}
+							else if(d.sex == 2){
+								html = '女'
+							}
+							return html;
+						}
+					},{
+						field: 'department',
+						title: '所属部門',
+						align: 'center',
+						width: 240
+					}, {
+						field: 'position',
+						title: '役職',
+						align: 'center',
+						width: 110
+					}, {
+						field: 'entry_time',
+						title: '入職日',
+						align: 'center',
+						width: 100
+					}, {
+						field: 'login_num',
+						title: 'ログイン回数',
+						align: 'center',
+						width: 136
+					}, {
+						field: 'last_login_time',
+						title: '最後のログイン',
+						align: 'center',
+						minWidth: 136
+					},{
+						field: 'right',
+						fixed:'right',
+						title: '操作',
+						width: 180,
+						align: 'center',
+						templet: function (d) {
+							var html = '';
+							var btn1 = '<span class="layui-btn layui-btn-xs layui-btn-normal" lay-event="view">詳細</span>';
+							var btn2 = '<span class="layui-btn layui-btn-xs" lay-event="edit">変更</span>';
+							var btn3 = '<span class="layui-btn layui-btn-xs layui-btn-warm" lay-event="copy">パスワードコピー</span>';
+							var btn4 = '<span class="layui-btn layui-btn-xs layui-btn-danger" lay-event="psw">パスワード初期化</span>';
+							if(d.reg_pwd == ''){
+								html = '<div class="layui-btn-group">'+btn1+btn2+btn4+'</div>';
+							}
+							else{
+								html = '<div class="layui-btn-group">'+btn1+btn2+btn3+'</div>';
+							}
+							return html;
+						}						
+					}
+				]
+			]
+		});
+
+		//表头工具栏事件
+		table.on('toolbar(test)', function(obj){
+			var checkStatus = table.checkStatus(obj.config.id); //获取选中行状态
+			var data = checkStatus.data;
+			if (obj.event === 'add') {
+				tool.side("/user/user/add");
+				return;
+			}
+			if (obj.event === 'import') {
+				uploadImport();	
+				return;				
+			}
+
+			var uidArray=[],msg='更新しますか',type=0;
+			for(var i=0;i<data.length;i++){
+				uidArray.push(data[i].id);
+			}
+			if (obj.event === 'disable') {
+				if(data.length==0){
+					layer.msg('社員情報を選択してください');
+					return false;
+				}
+				layer.confirm('無効化にしますか', {
+					icon: 3,
+					title: '提示'
+				}, function (index) {
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							layui.pageTable.reload();
+						}
+					}
+					tool.post("/user/user/set", {ids: uidArray.join(','),type:0}, callback);
+					layer.close(index);
+				});
+			}
+			
+			if (obj.event === 'recovery') {
+				if(data.length==0){
+					layer.msg('社員情報を選択してください');
+					return false;
+				}
+				layer.confirm('有効化にします?', {
+					icon: 3,
+					title: '提示'
+				}, function (index) {
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							layui.pageTable.reload();
+						}
+					}
+					tool.post("/user/user/set", {ids: uidArray.join(','),type:1}, callback);
+					layer.close(index);
+				});
+			}
+			
+		});
+
+
+		//监听行工具事件
+		table.on('tool(test)', function (obj) {
+			var data = obj.data;			
+			if (obj.event === 'view') {
+				tool.side('/user/user/view?id='+data.id);
+				return;
+			}
+			if(obj.event === 'edit'){
+				tool.side('/user/user/add?id='+data.id);
+			}
+			else if (obj.event === 'copy') {
+				copyToClip(data.reg_pwd);
+				return;
+			}
+			else if (obj.event === 'psw') {
+				layer.confirm('パスワードを初期化しますか', {
+					icon: 3,
+					title: '提示'
+				}, function (index) {
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							layui.pageTable.reload();
+						}
+					}
+					tool.post("/user/user/reset_psw", {id: data.id}, callback);
+					layer.close(index);
+				});
+				return;
+			}
+		});
+
+		//监听搜索提交
+		form.on('submit(webform)', function (data) {
+			layui.pageTable.reload({
+				where: {
+					keywords: data.field.keywords,
+					status: data.field.status,
+					type: data.field.type
+				},
+				page: {
+					curr: 1
+				}
+			});
+			return false;
+		});
+	}	
+	
+	//拷贝密码
+	function copyToClip(content) {
+		var save = function(e){
+			e.clipboardData.setData('text/plain', content);
+			e.preventDefault();
+		}
+		document.addEventListener('copy', save);
+		document.execCommand('copy');
+		document.removeEventListener('copy',save);
+		if (content != '') {
+			layer.msg('复制成功');
+		}
+	}
+</script>
+{/block}
+<!-- /脚本 -->

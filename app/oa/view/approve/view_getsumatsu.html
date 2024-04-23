@@ -1,0 +1,330 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+{include file="/approve/add_style" /}
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<h1 class="pb-3" style="text-align: center;">勤怠報告</h1>
+<input id="detail" hidden name="detail" value="{$detail.work_record}">
+<form class="layui-form p-4">
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-2">所属部門</td>
+			<td colspan="5">
+				<select name=" " lay-verify="required" disabled>
+					{volist name=":get_department()" id="vo"}
+					<option value="{$vo.id}" {$detail.report_department===$vo.title ? 'selected' : '' }>{$vo.title}
+					</option>
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray" style="width: 10%;">
+				<label>報告年度</label>
+			</td>
+			<td style="width: 40%;">
+				<select name="report_year" id="reportY" lay-filter="selctOnchange" disabled>
+					{volist name="detail.reportY" id="vo"}
+					<option value="{$vo}" {$detail.report_year==$vo ? 'selected' : '' }>{$vo}
+					</option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray" style="width: 10%;"><label>報告月</label></td>
+			<td style="width: 40%;">
+				<select name="report_month" id="reportM" lay-filter="selctOnchange" disabled>
+					{volist name="detail.reportM" id="vo"}
+					<option value="{$vo}" {$detail.report_month==$vo ? 'selected' : '' }>{$vo}
+					</option>
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">
+				<label for="inputMethod">入力方法</label>
+			</td>
+			<td>
+				<select name="inputMethod" id="inputMethod" disabled>
+					<option value="0" {$detail.inputMethod==0 ? 'selected' : '' }>手動入力</option>
+					<option value="1" {$detail.inputMethod==1 ? 'selected' : '' }>勤務表アップロード</option>
+				</select>
+			</td>
+			<td class="layui-td-gray"><label>添付</label>
+				<div class="layui-input-inline">
+				</div>
+			</td>
+			<td style="line-height:inherit">
+				<div class="layui-row" id="fileList">
+					<input data-type="file" type="hidden" name="file_ids" value="{$detail.file_ids}">
+					{notempty name="$detail.file_ids"}
+					{volist name="$detail.fileArray" id="vo"}
+					<div class="layui-col-md4" id="uploadImg{$vo.id}">{:file_card($vo)}</div>
+					{/volist}
+					{/notempty}
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">
+				<label>基準内(時間)</label>
+			</td>
+			<td>
+				<input name="standardsTime" id="standardsTime" value="{$detail.standardsTime}" disabled class="layui-input">
+			</td>
+			<td class="layui-td-gray">
+				<label>jobコード</label>
+			</td>
+			<td>
+				<input name="projectCode" id="projectCode" value="{$detail.projectCode}" disabled class="layui-input">
+			</td>
+		</tr>
+	</table>
+	<div class="layui-form-item" style="margin-top: 50px;">
+		<table class="layui-hide" id="ID-table-data" ></table>
+	</div>
+	<!-- 合計 要求 -->
+	<div class="layui-form-item" style="margin-top: 50px;">
+		<table class="layui-table layui-table-form " id="ID-table-sum-data">
+			<tr>
+				<td style="width: 8%;">合計</td>
+				<td style="width: 8%;">
+					出勤日数
+				</td>
+				<td>
+					<div class="layui-form-item">
+						<div class="layui-input-group">
+							<input type="text" id="sumDayId" name="work_day_total" value="0"
+								style="border:none;text-align:right;" readonly="readonly" class="layui-input">
+							<div class="layui-input-suffix">日</div>
+						</div>
+					</div>
+				</td>
+				<td style="width: 8%;">
+					作業時間
+				</td>
+				<td>
+					<div class="layui-form-item">
+						<div class="layui-input-group">
+							<input type="text" id="sumHourId" name="work_hours_total" value="0" style="border:none;text-align:right;"
+								readonly="readonly" class="layui-input">
+							<div class="layui-input-suffix">hh:mm</div>
+						</div>
+					</div>
+				</td>
+				<td style="width: 8%;">
+					時間外
+				</td>
+				<td>
+					<div class="layui-form-item">
+						<div class="layui-input-group">
+							<input type="text" id="exceptId" name="extra_working_hours" value="0" style="border:none;text-align:right;"
+								readonly="readonly" class="layui-input">
+							<div class="layui-input-suffix">hh:mm</div>
+						</div>
+					</div>
+				</td>
+				<td style="width: 8%;">
+					控 除
+				</td>
+				<td>
+					<div class="layui-form-item">
+						<div class="layui-input-group">
+							<input type="text" id="deductId" value="0" style="border:none;text-align:right;"
+								readonly="readonly" class="layui-input">
+							<div class="layui-input-suffix">hh:mm</div>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	{include file="/approve/view_step" /}
+</form>
+
+<!-- /主体 -->
+
+<!-- 脚本 -->
+<!-- 作業開始時刻select作成 -->
+<script type="text/html" id="workStartTimeSelectPrimary">
+
+	<select name="workStartTimeSelect" class="layui-border select-demo-primary" disabled lay-ignore data-value = {{d.workStartTime}}>
+		<option value="">-</option>
+		{volist name="detail.workStartSelect" id="str"}
+		<option value="{$str}" >{$str}
+		</option>
+		{/volist}
+	</select> 
+</script>
+<!-- 作業完了時刻select作成 -->
+<script type="text/html" id="workEndTimeSelectPrimary">
+	<select name="workEndTimeSelect" class="layui-border select-demo-primary" disabled lay-ignore data-value = {{d.workEndTime}}>
+		<option value="">-</option>
+		{volist name="detail.workEndSelect" id="str"}
+		<option value="{$str}" >{$str}
+		</option>
+		{/volist}
+	</select> 
+</script>
+<!-- 作業完了時刻select作成 -->
+<script type="text/html" id="deductSelectPrimary">
+	<select name="deductTimeSelect" class="layui-border select-demo-primary" disabled lay-ignore data-value = {{d.deductTime}}>
+		<option value="">-</option>
+		{volist name="detail.workDeductSelect" id="str"}
+		<option value="{$str}" >{$str}
+		</option>
+		{/volist}
+	</select> 
+</script>
+
+<script>
+	var tableData;
+	var selectYearVal = "";
+	var selectMonthVal = "";
+
+
+	// 时间补零
+	function dateFormat(hourMin) {
+		var colonIdex = hourMin.search(":");
+		var hour;
+		var min;
+		if (colonIdex == 1) {
+			hour = parseInt(hourMin.substr(0, 1));
+		} else {
+			hour = parseInt(hourMin.substr(0, colonIdex));
+		}
+		min = parseInt(hourMin.substr(colonIdex + 1));
+		if (hour < 10) {
+			hour = "0" + hour;
+		}
+		if (min < 10) {
+			min = "0" + min;
+		}
+		return hour + ":" + min;
+	}
+	// 时间相加00:00 格式
+	function timeAdd(sumTime, newTime) {
+		var sumTimeI = sumTime.search(":");
+		var newTimeI = newTime.search(":");
+		var resHour = parseInt(sumTime.substr(0, sumTimeI)) + parseInt(newTime.substr(0,newTimeI));
+		var resMin = parseInt(sumTime.substr(sumTimeI+1)) + parseInt(newTime.substr(newTimeI+1));
+		if (resMin >= 60) {
+			resMin -= 60;
+			resHour++;
+		}
+		return dateFormat(resHour + ":" + resMin);
+	}
+	function sumDay(data) {
+		var sumDayVal = 0;
+		var sumTime = "00:00";
+		var sumExceptval = "00:00";
+		var sumDeductVal = "00:00";
+		for (let i = 0; i < data.length; i++) {
+			if (data[i].sumDayTime != undefined && data[i].sumDayTime != "") {
+				sumTime = timeAdd(sumTime, data[i].sumDayTime);
+				sumExceptval = timeAdd(sumExceptval, data[i].exceptTime);
+				sumDeductVal = timeAdd(sumDeductVal, data[i].deductTime);
+				sumDayVal++;
+			}
+		}
+		$("#sumHourId").val(dateFormat(sumTime));
+		$("#exceptId").val(dateFormat(sumExceptval));
+		$("#deductId").val(dateFormat(sumDeductVal));
+		$("#sumDayId").val(sumDayVal);
+
+	}
+
+	
+	function renderTable(table) {
+		// 已知数据渲染
+		table.render({
+			elem: '#ID-table-data',
+			cols: [[ //标题栏
+				{ field: 'day', title: '月/日', width: 120, sort: false },
+				{ field: 'week', title: '曜', width: 60, sort: false },
+				{ field: 'workStartTime', title: '作業開始時刻', templet: '#workStartTimeSelectPrimary', sort: false },
+				{ field: 'workEndTime', title: '作業完了時刻', templet: '#workEndTimeSelectPrimary', sort: false },
+				// { field: 'standardsTime', title: '基準内(Hr)', sort: false },
+				{ field: 'exceptTime', title: '時間外(Hr)', sort: false },
+				{ field: 'deductTime', title: '控 除(Hr)', templet: '#deductSelectPrimary' },
+				{ field: 'sumDayTime', title: '小計(Hr)', sort: false },
+				{ field: 'remark', title: '作業内容(備考)'}
+			]],
+			data: tableData,
+			done: function (res, page, count) {
+				var that = this.elem.next();
+				var demandDay = 0;
+				res.data.forEach(function (item, index) {
+					if (item.week == "日" || item.week == "土") {
+						var tr = that.find(".layui-table-box tbody tr[data-index='" + index + "']");
+						tr.css("background-color", "#d1cccc");
+					} else {
+						demandDay++;
+					}
+					layui.each($("select[name='workStartTimeSelect']", ""), function (index, item) {
+						var elem = $(item);
+						elem.val(elem.data('value'));
+					});
+					layui.each($("select[name='workEndTimeSelect']", ""), function (index, item) {
+						var elem = $(item);
+						elem.val(elem.data('value'));
+					});
+					layui.each($("select[name='deductTimeSelect']", ""), function (index, item) {
+						var elem = $(item);
+						elem.val(elem.data('value'));
+					});
+
+				});
+				// 合計 日数 時間 時間外 控 除
+				sumDay(tableData);
+				var options = this;
+				var index;
+				// 获取当前行数据
+				table.getRowData = function (elem) {
+					index = $(elem).closest('tr').data('index');
+					return table.cache[options.id][index] || {};
+				};
+
+				var rowData;
+
+				table.on('row(ID-table-data)', function (obj) {
+					rowData = obj;
+				});
+			}
+		});
+
+	}
+
+	function viewInit() {
+		var d = new Date();
+		var nowYear = d.getFullYear();
+		var yy = document.getElementById("reportY");
+		var tdata = $("#detail").val();
+			tableData = eval('(' + tdata + ')');
+		renderTable(table);
+
+	}
+</script>
+<script>
+	// const moduleInit = ['tool', 'employeepicker', 'oaTool'];
+	function getsumatsuInit() {
+		var form = layui.form,
+			tool = layui.tool,
+			oaTool = layui.oaTool,
+			laydate = layui.laydate;
+		dropdown = layui.dropdown;
+		table = layui.table;
+		viewInit();
+		if (typeof (flowStep) == "function") {
+			flowStep();
+		}
+	}
+
+</script>
+{/block}
+{block name="script"}
+{include file="/approve/view_script" kinou="getsumatsu"/}
+{/block}
+<!-- /脚本 -->

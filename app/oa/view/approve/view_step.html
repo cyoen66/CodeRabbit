@@ -1,0 +1,80 @@
+	<table class="layui-table layui-table-form mt-4">
+		<tr>
+			<td class="layui-td-gray">承認状況</td>
+			<td>{eq name="$detail.check_status" value="0"}<span class="black">承認待ち</span>{/eq}
+				{eq name="$detail.check_status" value="1"}<span class="blue">承認中</span>{/eq}
+				{eq name="$detail.check_status" value="2"}<span class="green">承認</span>{/eq}
+				{eq name="$detail.check_status" value="3"}<span class="red">拒否</span>{/eq}
+				{eq name="$detail.check_status" value="4"}<span class="yellow">キャンセル</span>{/eq}
+			</td>
+			<td class="layui-td-gray-2">現在承認者</td>
+			<td>{$detail.check_user}</td>
+			<td class="layui-td-gray">CC</td>
+			<td>{$detail.copy_user}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">承認フロー</td>
+			<td colspan="5">
+				<div class="flow-flexbox check-items flow-flex-row" id="flowList">
+					<div class="flow-flexbox check-item flow-flex-row">
+						<i class="layui-icon layui-icon-add-circle" data-ok=""></i>
+						<div class="check-item-name">{$detail.create_user}</div>
+						<div class="check-item-status">作成</div>
+						<span class="layui-icon layui-icon-right"></span>
+					</div>
+				</div>
+			</td>
+		</tr>
+		{notempty name="$check_record"}
+		<tr>
+			<td class="layui-td-gray">承認履歴</td>
+			<td colspan="5">
+				<ul class="layui-timeline flow-record pt-2">
+				{volist name="$check_record" id="vo"}		
+					<li class="layui-timeline-item delete-{$vo.delete_time}">
+						<i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+						<p style="padding-left:24px">{$vo.check_time_str}<span class="black ml-2">{$vo.name}</span>この申請を<span class="mx-2 layui-color-{$vo.status}">{$vo.status_str}</span>しました。。コメント：<span class="green">{$vo.content}</span></p>
+					</li>
+				{/volist}
+				</ul>
+			</td>
+		</tr>
+		{/notempty}
+		{if ( $detail.check_status lt 2) AND ( $is_check_admin eq 1) }
+		{eq name="$flows.flow_type" value="0"}
+		<tr>
+			<td class="layui-td-gray">承認段階 <font>*</font></td>
+			<td colspan="5">
+				<input type="radio" name="check_node" lay-filter="check_node" value="1" title="承認終了">
+				<input type="radio" name="check_node" lay-filter="check_node" value="2" title="次の承認者">
+				<div class="layui-inline">
+				<input type="text" name="check_admin_name" value="" autocomplete="off" placeholder="次の承認者を選択してください" lay-verify="required" lay-reqText="次の承認者を選択してください" class="layui-input picker-one"><input type="hidden" name="check_admin_ids" value="">
+				</div>				
+			</td>
+		</tr>
+		{/eq}
+		<tr>
+			<td class="layui-td-gray">コメント <font>*</font></td>
+			<td colspan="5">
+				<textarea name="content" placeholder="コメントを入力してください" class="layui-textarea"></textarea>
+			</td>
+		</tr>
+		{/if}
+	</table>
+	<input type="hidden" name="id" value="{$detail.id}">
+	<input type="hidden" name="flow_type" value="{$flows.flow_type}">
+	<input type="hidden" name="check_step_sort" value="{$detail.check_step_sort}">
+	<div id="formBtn" style="padding: 10px 0">
+		{if ( $detail.check_status lt 2)}
+			{eq name="$is_check_admin" value='1'}
+			<span class="layui-btn layui-btn-normal" data-status="1"><i class="layui-icon layui-icon-ok"></i> 承認</span>
+			<span class="layui-btn layui-btn-danger" data-status="2"><i class="layui-icon layui-icon-close"></i> {$flows.flow_type == 5?'戻す':'拒否'}</span>
+			{/eq}
+			{eq name="$is_create_admin" value='1'}
+			<span class="layui-btn layui-btn-primary" data-status="3"><i class="layui-icon layui-icon-reduce-circle"></i> キャンセル</span>
+			{/eq}
+		{/if}
+		{if ( $detail.check_status gt 2) AND ( $is_create_admin eq 1) }
+		<a class="layui-btn" href="/oa/approve/add?id={$detail.id}">再編集</a>
+		{/if}
+    </div>

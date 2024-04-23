@@ -1,0 +1,41 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+{include file="/approve/view_style" /}
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">車両返却申請</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">車両</td>
+			<td>
+				{volist name=":oa_car_cate()" id="vo"}
+				{eq name="$detail.detail_type" value="$vo.id"}{$vo.title}{/eq}
+				{/volist}
+			</td>
+			<td class="layui-td-gray-2">車両申請前キロ数</td>
+			<td>{$detail.num}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">返却時間</td>
+			<td>{$detail.detail_time}</td>
+			<td class="layui-td-gray-2">車両返却後キロ数</td>
+			<td>{$detail.num1}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">備考</td>
+			<td colspan="3">{$detail.remark}</td>
+		</tr>
+	</table>
+	
+	{include file="/approve/view_step" /}
+</div>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+{include file="/approve/view_script" /}
+{/block}
+<!-- /脚本 -->

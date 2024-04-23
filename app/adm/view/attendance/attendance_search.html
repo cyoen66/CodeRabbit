@@ -1,0 +1,145 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+
+<form class="layui-form p-4">
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-2">所属部門</td>
+			<td>
+				<select name="department_id" id="department_id">
+					<option value="">すべて</option>
+					{volist name=":get_department()" id="vo"}
+					<option value="{$vo.id}">{$vo.title}
+					</option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray-2">承認状況</td>
+			<td>
+				<select name="check_status" id="check_status">
+					<option value="">すべて</option>
+					<option value="-1">未申請</option>
+					<option value="0">承認待ち</option>
+					<option value="1">承認中</option>
+					<option value="2">承認された</option>
+					<option value="3">却下</option>
+					<option value="4">キャンセル</option>
+					<!-- <option value="5">一時保存</option> -->
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray" style="width: 10%;">
+				<label>報告年度</label>
+			</td>
+			<td style="width: 40%;">
+				<select name="report_year" id="report_year">
+					{volist name="detail.reportY" id="vo"}
+					<option value="{$vo}" {$detail.thisY==$vo ? 'selected' : '' }>{$vo}
+					</option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray" style="width: 10%;"><label>報告月</label></td>
+			<td style="width: 40%;">
+				<select name="report_month" id="report_month">
+					{volist name="detail.reportM" id="vo"}
+					<option value="{$vo}" {$detail.thisM==$vo ? 'selected' : '' }>{$vo}
+					</option>
+					{/volist}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray" style="width: 10%;">
+				<label>jobコード</label>
+			</td>
+			<td style="width: 40%;">
+				<input name="projectCode" id="projectCode" class="layui-input">
+			</td>
+		</tr>
+	</table>
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i
+				class="layui-icon layui-icon-search mr-1"></i>検索</button>
+	</div>
+</form>
+<div class="p-3">
+	<table class="layui-hide" id="attendance" lay-filter="attendance"></table>
+</div>
+
+{/block}
+<!-- /主体 -->
+<!-- スクリプト -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool, form = layui.form;
+		//监听搜索提交
+		form.on('submit(webform)', function (data) {
+			layui.pageTable.reload({
+				elem: '#attendance'
+				, defaultToolbar: false
+				, url: "/adm/Attendance/attendance_search"
+				, where: {
+					check_status: data.field.check_status,
+					department_id: data.field.department_id,
+					report_month: data.field.report_month,
+					report_year: data.field.report_year,
+					projectCode: data.field.projectCode,
+					
+				},
+				page: {curr: 1}
+			});
+			console.log(data);
+			return false;
+		});
+
+		layui.pageTable = table.render({
+			elem: '#attendance'
+			// , toolbar: '#toolbarDemo'
+			, defaultToolbar: false
+			, title: '勤怠報告'
+			, url: "/adm/Attendance/attendance_search"
+			, page: true //开启分页
+			, limit: 20
+			, cellMinWidth: 80
+			, cols: [[
+				{ field: 'id', width: 80, title: 'ID', hide: true }
+				, { field: 'name', title: '申請者' }
+				, { field: 'department_name', title: '所属部門' }
+				, { field: 'projectCode', title: 'jobコード' }
+				, {
+					field: 'check_status', title: '承認状況', align: 'center', templet: function (d) {
+						if (d.check_status == undefined || d.check_status == null) {
+							return '<span style="color:#FF5722">未申請</span>';
+						}
+						var htmlArray = ['<span style="color:#666666">承認待ち</span>', '<span style="color:#4285f4">承認中</span>', '<span style="color:#34a853">承認された</span>', '<span style="color:#FF5722">却下</span>', '<span style="color:#fbbc05">キャンセル</span>'];
+						return htmlArray[d.check_status];
+					}
+				}
+				// , { field: 'content', title: '理由/説明/注釈' }
+				, { field: 'work_hours_total', title: '作業時間' }
+				, { field: 'work_day_total', title: '作業日' }
+				, { field: 'extra_working_hours', title: '基準外時間' }
+				, { field: 'annual_leave', title: '有休残' }
+				, { field: 'check_user', title: '承認者' }
+				, { field: 'create_time', title: '申請時間' }
+				// , {
+				// 	width: 60, fixed: 'right', title: '操作', align: 'center', templet: function (d) {
+				// 		var btn = '<a class="layui-btn layui-btn-xs" lay-event="view">詳細</a>';
+				// 		return btn;
+				// 	}
+				// }
+			]]
+		});
+		table.on('tool(attendance)', function (obj) {
+		});
+	}
+</script>
+
+{/block}
+<!-- /スクリプト -->

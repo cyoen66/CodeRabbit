@@ -1,0 +1,80 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-1">権限設定</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td colspan="4" class="red" style="line-height:1.8">
+				<p><strong>顧客モジュールの使用説明：</strong></p>
+				<p>{$detail.desc}</p>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">権限名称</td>
+			<td>
+				<input type="hidden" name="id" value="{$detail.id}" />
+				{$detail.title}
+			</td>
+			<td class="layui-td-gray">権限識別子</td>
+			<td>{$detail.name}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-3">毎日取得可能な公客数<font>*</font></td>
+			<td><input type="text" name="expected_1" value="{$detail.expected_1}" lay-verify="required|number" lay-reqText="毎日取得できる最大の公客数を入力してください" placeholder="毎日取得できる最大の公客数" autocomplete="off" class="layui-input"></td>
+			<td colspan="3" class="red">
+				例：10。この数を超えると、従業員は抢客宝で顧客を取得することができなくなり、公海から顧客を受け取ることもできなくなります。翌日に自動的に回復します。
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-3">従業員の顧客数制限<font>*</font></td>
+			<td><input type="text" name="expected_2" value="{$detail.expected_2}" lay-verify="required|number" lay-reqText="従業員の顧客数制限を入力してください" placeholder="従業員の顧客数制限" autocomplete="off" class="layui-input"></td>
+			<td colspan="3" class="red">
+				例：100。この数を超えると、従業員は顧客を追加してもも、公海に顧客を移動することもできません。この数を超えないようにしてください。
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-3">顧客の保持期間（日数）<font>*</font></td>
+			<td><input type="text" name="expected_3" value="{$detail.expected_3}" lay-verify="required|number" lay-reqText="顧客の保持期間を入力してください" placeholder="顧客の保持期間" autocomplete="off" class="layui-input"></td>
+			<td colspan="3" class="red">
+				例：30日。ある従業員がある顧客を受け取るか登録した日から30日間に契約を締結しない場合、顧客は自動的に公海に移動します。この機能を有効にするには、サーバー設定で定期的なサービスプランを有効にする必要があります。毎日午前1時に以下のリンクを訪れます。
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">顧客管理者</td>
+			<td colspan="4">
+				<input type="text" id="unames" name="unames" value="{$detail.unames}" readonly placeholder="権限を持つ人員を選択してください" autocomplete="off" class="layui-input picker-more">
+				<input type="hidden" id="uids" name="uids" value="{$detail.uids}">
+			</td>
+		</tr>
+	</table>
+	<div class="pt-1">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">確定</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool','employeepicker'];
+	function gouguInit() {
+		var form = layui.form, tool = layui.tool;
+		
+		//监听提交
+		form.on('submit(webform)', function (data) {
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if(e.code==0){
+					tool.sideClose(1000);
+				}
+			}
+			tool.post("/home/dataauth/edit", data.field, callback);
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,72 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<table class="layui-hide" id="conf" lay-filter="conf"></table>
+</div>
+
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+	<h3>モジュールデータ権限設定</h3>
+  </div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool, form = layui.form;
+		layui.pageTable = table.render({
+			elem: '#conf',
+			title: '配置リスト',
+			toolbar: '#toolbarDemo',
+			defaultToolbar: false,
+			url: "/home/dataauth/index",
+			cellMinWidth: 80,
+			page: false, //ページネーションを無効にする				
+			limit: 20,
+			cols: [
+				[{
+					field: 'id',
+					width: 80,
+					title: 'ID番号',
+					align: 'center'
+				}, {
+					field: 'title',
+					width: 200,
+					title: '権限名称'
+				}, {
+					field: 'name',
+					width: 200,
+					title: '権限識別子'
+				}, {
+					field: 'desc',
+					minWidth: 300,
+					title: '説明'
+				}, {
+					width: 100,
+					title: '操作',
+					align: 'center',
+					templet: function (d) {
+						var html = '<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit" >編集</button>';
+						return html;
+					}
+				}]
+			]
+		});
+
+		//行のツールイベントを監視する
+		table.on('tool(conf)', function (obj) {
+			var data = obj.data;
+			if (obj.event === 'edit') {
+				tool.side('/home/dataauth/edit?id=' + data.id);
+				return;
+			}
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->
