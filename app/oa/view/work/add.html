@@ -1,0 +1,208 @@
+{extend name="../../base/view/common/base" /}
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">業務報告</h3>
+	{if condition="$id eq 0"}
+	<table class="layui-table">
+		<tr>
+			<td class="layui-td-gray">受信者<font>*</font></td>
+			<td>
+				<input type="text" name="person_name" value="" lay-verify="required" lay-reqText="受信者を選択してください" placeholder="受信者を選択してください" readonly class="layui-input picker-more">
+				<input type="hidden" name="uids" value="">
+			</td>
+			<td class="layui-td-gray">報告種類</td>
+			<td>
+				{eq name="$type" value="1"}日報{/eq}
+				{eq name="$type" value="2"}週報{/eq}
+				{eq name="$type" value="3"}月報{/eq}
+			</td>
+		</tr>
+		{if condition="($type == 1)"}
+		<tr>
+			<td class="layui-td-gray">本日業務<font>*</font></td>
+			<td colspan="3">
+				<textarea name="works" placeholder="本日の業務内容を入力してください" class="layui-textarea" style="height: 120px;" lay-verify="required" lay-reqText="本日の業務内容を入力してください"></textarea>
+			</td>
+		</tr>
+		<tr><td class="layui-td-gray">明日予定</td>
+			<td colspan="3">
+				<textarea name="plans" placeholder="明日の予定を入力してください" class="layui-textarea" style="height: 120px;"></textarea>
+			</td>
+		</tr>
+		{elseif condition="($type == 2)"}
+		<tr>
+			<td class="layui-td-gray">今週業務<font>*</font></td>
+			<td colspan="3">
+				<textarea name="works" placeholder="今週の業務内容を入力してください" class="layui-textarea" style="height: 120px;" lay-verify="required" lay-reqText="今週の業務内容を入力してください"></textarea>
+			</td>
+		</tr>
+		<tr><td class="layui-td-gray">来週予定</td>
+			<td colspan="3">
+				<textarea name="plans" placeholder="来週の予定を入力してください" class="layui-textarea" style="height: 120px;"></textarea>
+			</td>
+		</tr>
+		{elseif condition="($type == 3)"}
+		<tr>
+			<td class="layui-td-gray">今月業務<font>*</font></td>
+			<td colspan="3">
+				<textarea name="works" placeholder="今月の業務内容を入力してください" class="layui-textarea" style="height: 120px;" lay-verify="required" lay-reqText="今月の業務内容を入力してください"></textarea>
+			</td>
+		</tr>
+		<tr><td class="layui-td-gray">来月予定</td>
+			<td colspan="3">
+				<textarea name="plans" placeholder="来月の予定を入力してください" class="layui-textarea" style="height: 120px;"></textarea>
+			</td>
+		</tr>
+		{/if}
+		<tr><td class="layui-td-gray">他事項</td>
+			<td colspan="3">
+				<textarea name="remark" placeholder="その他の事項を入力してください" class="layui-textarea" style="height: 120px;"></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray"><div class="layui-input-inline">添付</div> <div class="layui-input-inline"><button type="button" class="layui-btn layui-btn-xs" id="upFile"><i class="layui-icon"></i></button></div></td>
+			<td colspan="3" style="line-height:inherit">
+				<div class="layui-row" id="fileList">
+					<input type="hidden" data-type="file" name="file_ids" value="">
+				</div>
+			</td>
+		</tr>
+	</table>
+	<div style="padding:10px 0;">
+		<input type="hidden" value="{$id}" name="id">
+		<input type="hidden" value="{$type}" name="type">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">送信</button>
+	</div>
+	{else/}
+	<table class="layui-table">
+		<tr>
+			<td class="layui-td-gray">受信者</td>
+			<td>
+				{$detail.person_name}
+			</td>
+			<td class="layui-td-gray">報告種類</td>
+			<td>
+				{eq name="$detail.type" value="1"}日報{/eq}
+				{eq name="$detail.type" value="2"}週報{/eq}
+				{eq name="$detail.type" value="3"}月報{/eq}
+			</td>
+		</tr>
+		{if condition="($type == 1)"}
+		<tr>
+			<td class="layui-td-gray">本日業務<font>*</font></td>
+			<td colspan="3">
+				<textarea name="works" placeholder="本日の業務内容を入力してください" class="layui-textarea" style="height: 120px;" lay-verify="required" lay-reqText="本日の業務内容を入力してください">{$detail.works}</textarea>
+			</td>
+		</tr>
+		<tr><td class="layui-td-gray">明日予定</td>
+			<td colspan="3">
+				<textarea name="plans" placeholder="明日の予定を入力してください" class="layui-textarea" style="height: 120px;">{$detail.plans}</textarea>
+			</td>
+		</tr>
+		{elseif condition="($type == 2)"}
+		<tr>
+			<td class="layui-td-gray">今週業務<font>*</font></td>
+			<td colspan="3">
+				<textarea name="works" placeholder="今週の業務内容を入力してください" class="layui-textarea" style="height: 120px;" lay-verify="required" lay-reqText="今週の業務内容を入力してください">{$detail.works}</textarea>
+			</td>
+		</tr>
+		<tr><td class="layui-td-gray">来週予定</td>
+			<td colspan="3">
+				<textarea name="plans" placeholder="来週の予定を入力してください" class="layui-textarea" style="height: 120px;">{$detail.plans}</textarea>
+			</td>
+		</tr>
+		{elseif condition="($type == 3)"}
+		<tr>
+			<td class="layui-td-gray">今月業務<font>*</font></td>
+			<td colspan="3">
+				<textarea name="works" placeholder="今月の業務内容を入力してください" class="layui-textarea" style="height: 120px;" lay-verify="required" lay-reqText="今月の業務内容を入力してください">{$detail.works}</textarea>
+			</td>
+		</tr>
+		<tr><td class="layui-td-gray">来月予定</td>
+			<td colspan="3">
+				<textarea name="plans" placeholder="来月の予定を入力してください" class="layui-textarea" style="height: 120px;">{$detail.plans}</textarea>
+			</td>
+		</tr>
+		{/if}
+		<tr><td class="layui-td-gray">他事項</td>
+			<td colspan="3">
+				<textarea name="remark" placeholder="他の事項を入力してください" class="layui-textarea" style="height: 120px;">{$detail.remark}</textarea>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray"><div class="layui-input-inline">添付</div> <div class="layui-input-inline"><button type="button" class="layui-btn layui-btn-xs" id="upFile"><i class="layui-icon"></i></button></div></td>
+			<td colspan="3" style="line-height:inherit">
+				<div class="layui-row" id="fileList">
+					<input type="hidden" name="file_ids" data-type="file" value="{$detail.file_ids}">
+					{notempty name="$file_array"}
+					{volist name="file_array" id="vo"}
+					<div class="layui-col-md4" id="uploadImg{$vo.id}">{:file_card($vo)}</div>
+					{/volist}
+					{/notempty}
+				</div>
+			</td>
+		</tr>
+	</table>
+	<div style="padding:10px 0;">
+		<input type="hidden" value="{$id}" name="id">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform1">保存</button>
+	</div>
+	{/if}
+	</form>
+	{/block}
+	<!-- /主体 -->
+	
+	<!-- 脚本 -->
+	{block name="script"}	
+	<script>
+	const moduleInit = ['tool','employeepicker','oaTool'];
+		function gouguInit() {
+			var form = layui.form,tool=layui.tool,  oaTool = layui.oaTool;
+			oaTool.addFile({
+				btn: 'upFile',
+				box: 'fileList'
+			});	
+			//监听送信
+			form.on('submit(webform)', function(data){
+				if(data.field.uids==login_admin){
+					layer.msg('受信者は自分自身にすることはできません');
+					return false;
+				}
+				$.ajax({
+					url: "/oa/work/send",
+					type:'post',
+					data:data.field,
+					success:function(e){
+						layer.msg(e.msg);
+						if (e.code == 0) {						
+							setTimeout(function(){
+								parent.location.reload();
+							},1000);
+						}
+					}
+				})
+				return false;
+			});
+			
+			//监听保存
+			form.on('submit(webform1)', function(data){
+				$.ajax({
+					url: "/oa/work/add",
+					type:'post',
+					data:data.field,
+					success:function(e){
+						layer.msg(e.msg);
+						if (e.code == 0) {						
+							setTimeout(function(){
+								parent.location.reload();
+							},1000);
+						}
+					}
+				})
+				return false;
+			});
+	
+		}		
+		</script>
+	{/block}	
+	<!-- /脚本 -->

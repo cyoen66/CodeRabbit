@@ -1,0 +1,803 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+<style>
+.layui-unselect dl {max-height:188px;}
+body, html {
+	font-family: arial, sans-serif;
+	font-size: 11pt;
+  }
+
+  #visualization {
+	box-sizing: border-box;
+	width: 100%;
+	height: 300px;
+  }
+  
+  .vis-item.openwheel  { background-color: #B0E2FF; }
+  .vis-item.rally      { background-color: #EAEAEA; }
+  .vis-item.motorcycle { background-color: #FA8072; }
+  .vis-item.touringcar { background-color: #B4EEB4; }
+  .vis-item.endurance  { background-color: #FFFFCC; }
+</style>
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<p>
+		This example demonstrates editable groups (reordering and hiding).
+		<button onclick="showAllGroups()">Restore Hidden</button>
+	  </p>
+	  <div id="visualization"></div>
+</div>
+<!-- <script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+  	<button class="layui-btn layui-btn-sm addLoan" type="button">+ 新規スケジュール</button>
+  </div>
+</script> -->
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	// https://motocal.com/
+	var groups = new vis.DataSet([
+	  {"content": "Formula E", "id": "Formula E", "value": 1, className:'openwheel'},
+	  {"content": "WRC", "id": "WRC", "value": 2, className:'rally'},
+	  {"content": "MotoGP", "id": "MotoGP", "value": 3, className:'motorcycle'},
+	  {"content": "V8SC", "id": "V8SC", "value": 4, className:'touringcars'},
+	  {"content": "WTCC", "id": "WTCC", "value": 5, className:'touringcars'},
+	  {"content": "F1", "id": "F1", "value": 6, className:'openwheel'},
+	  {"content": "SBK", "id": "SBK", "value": 7, className:'motorcycle'},
+	  {"content": "IndyCar", "id": "IndyCar", "value": 8, className:'openwheel'},
+	  {"content": "MotoAmerica", "id": "MotoAmerica", "value": 9, className:'motorcycle'},
+	  {"content": "SGP", "id": "SGP", "value": 10, className:'rally'},
+	  {"content": "EWC", "id": "EWC", "value": 11, className:'endurance'},
+	  {"content": "BSB", "id": "BSB", "value": 12, className:'motorcycle'},
+	  {"content": "DTM", "id": "DTM", "value": 13, className:'touringcars'},
+	  {"content": "BTCC", "id": "BTCC", "value": 14, className:'touringcars'},
+	  {"content": "WorldRX", "id": "WorldRX", "value": 15, className:'rally'},
+	  {"content": "WSR", "id": "WSR", "value": 16, className:'openwheel'},
+	  {"content": "Roads", "id": "Roads", "value": 17, className:'motorcycle'},
+	  {"content": "WEC", "id": "WEC", "value": 18, className:'endurance'},
+	  {"content": "GP2", "id": "GP2", "value": 19, className:'openwheel'}
+	]);
+  
+	// function to make all groups visible again
+	function showAllGroups(){
+	  groups.forEach(function(group){
+		groups.update({id: group.id, visible: true});
+	  })
+	};
+  
+	// create a dataset with items
+	// note that months are zero-based in the JavaScript Date object, so month 3 is April
+	var items = new vis.DataSet([
+	  {start: new Date(2023, 8, 30,14), end: new Date(2023, 8, 30,24), group:"Formula E", className:"openwheel", content:"Argentina",id:"531@motocal.net"},
+	  {start: new Date(2023, 8, 29,12), end: new Date(2023, 8, 30,14), group:"WRC", className:"rally", content:"Rallye Monte-Carlo",id:"591@motocal.net"},
+	  {start: new Date(2015, 1, 4), end: new Date(2015, 1, 8), group:"MotoGP", className:"motorcycle", content:"Sepang MotoGP Test 1",id:"578@motocal.net"},
+	  {start: new Date(2015, 1, 12), end: new Date(2015, 1, 16), group:"WRC", className:"rally", content:"Rally Sweden",id:"592@motocal.net"},
+	  {start: new Date(2015, 1, 20), end: new Date(2015, 1, 23), group:"SBK", className:"motorcycle", content:"Australia",id:"616@motocal.net"},
+	  {start: new Date(2015, 1, 23), end: new Date(2015, 1, 27), group:"MotoGP", className:"motorcycle", content:"Sepang MotoGP Test 2",id:"579@motocal.net"},
+	  {start: new Date(2015, 1, 26), end: new Date(2015, 2, 2), group:"V8SC", className:"touringcar", content:"Clipsal 500 Adelaide",id:"659@motocal.net"},
+	  {start: new Date(2015, 2, 5), end: new Date(2015, 2, 9), group:"WRC", className:"rally", content:"Rally Guanajuato Mexico",id:"593@motocal.net"},
+	  {start: new Date(2015, 2, 6), end: new Date(2015, 2, 9), group:"WTCC", className:"touringcar", content:"Argentina",id:"717@motocal.net"},
+	  {start: new Date(2015, 2, 12), end: new Date(2015, 2, 16), group:"V8SC", className:"touringcar", content:"Australian Grand Prix",id:"660@motocal.net"},
+	  {start: new Date(2015, 2, 13), end: new Date(2015, 2, 16), group:"F1", className:"openwheel", content:"Australia",id:"630@motocal.net"},
+	  {start: new Date(2015, 2, 14), end: new Date(2015, 2, 15), group:"Formula E", className:"openwheel", content:"Miami, USA",id:"534@motocal.net"},
+	  {start: new Date(2015, 2, 14), end: new Date(2015, 2, 17), group:"MotoGP", className:"motorcycle", content:"Qatar MotoGP Test",id:"577@motocal.net"},
+	  {start: new Date(2015, 2, 20), end: new Date(2015, 2, 23), group:"SBK", className:"motorcycle", content:"Thailand",id:"617@motocal.net"},
+	  {start: new Date(2015, 2, 27), end: new Date(2015, 2, 30), group:"F1", className:"openwheel", content:"Malaysia",id:"631@motocal.net"},
+	  {start: new Date(2015, 2, 27), end: new Date(2015, 2, 30), group:"V8SC", className:"touringcar", content:"Tasmania SuperSprint",id:"661@motocal.net"},
+	  {start: new Date(2015, 2, 27), end: new Date(2015, 2, 30), group:"IndyCar", className:"openwheel", content:"Grand Prix of St. Petersburg",id:"752@motocal.net"},
+	  {start: new Date(2015, 3, 4), end: new Date(2015, 3, 7), group:"BSB", className:"motorcycle", content:"Round 1",id:"604@motocal.net"},
+	  {start: new Date(2015, 3, 4), end: new Date(2015, 3, 6), group:"BTCC", className:"touringcar", content:"Rounds 1, 2 & 3",id:"581@motocal.net"},
+	  {start: new Date(2015, 3, 4), end: new Date(2015, 3, 5), group:"Formula E", className:"openwheel", content:"Long Beach, USA",id:"535@motocal.net"},
+	  {start: new Date(2015, 3, 10), end: new Date(2015, 3, 13), group:"IndyCar", className:"openwheel", content:"Indy Grand Prix of Louisiana",id:"753@motocal.net"},
+	  {start: new Date(2015, 3, 10), end: new Date(2015, 3, 13), group:"MotoAmerica", className:"motorcycle", content:"COTA",id:"705@motocal.net"},
+	  {start: new Date(2015, 3, 10), end: new Date(2015, 3, 13), group:"SBK", className:"motorcycle", content:"Aragon",id:"618@motocal.net"},
+	  {start: new Date(2015, 3, 10), end: new Date(2015, 3, 13), group:"MotoGP", className:"motorcycle", content:"Americas",id:"540@motocal.net"},
+	  {start: new Date(2015, 3, 10), end: new Date(2015, 3, 13), group:"F1", className:"openwheel", content:"China",id:"632@motocal.net"},
+	  {start: new Date(2015, 3, 12), end: new Date(2015, 3, 13), group:"WEC", className:"endurance", content:"6 Hours of Silverstone",id:"674@motocal.net"},
+	  {start: new Date(2015, 3, 17), end: new Date(2015, 3, 20), group:"BSB", className:"motorcycle", content:"Round 2",id:"605@motocal.net"},
+	  {start: new Date(2015, 3, 17), end: new Date(2015, 3, 20), group:"F1", className:"openwheel", content:"Bahrain",id:"633@motocal.net"},
+	  {start: new Date(2015, 3, 17), end: new Date(2015, 3, 20), group:"IndyCar", className:"openwheel", content:"Grand Prix of Long Beach",id:"754@motocal.net"},
+	  {start: new Date(2015, 3, 17), end: new Date(2015, 3, 20), group:"MotoAmerica", className:"motorcycle", content:"Road Atlanta",id:"706@motocal.net"},
+	  {start: new Date(2015, 3, 17), end: new Date(2015, 3, 20), group:"SBK", className:"motorcycle", content:"Netherlands",id:"619@motocal.net"},
+	  {start: new Date(2015, 3, 17), end: new Date(2015, 3, 20), group:"WTCC", className:"touringcar", content:"Morocco",id:"718@motocal.net"},
+	  {start: new Date(2015, 3, 17), end: new Date(2015, 3, 20), group:"MotoGP", className:"motorcycle", content:"Argentina",id:"559@motocal.net"},
+	  {start: new Date(2015, 3, 18), end: new Date(2015, 3, 19), group:"SGP", className:"rally", content:"Warsaw",id:"729@motocal.net"},
+	  {start: new Date(2015, 3, 18), end: new Date(2015, 3, 20), group:"EWC", className:"endurance", content:"24 Heures Moto Le Mans",id:"701@motocal.net"},
+	  {start: new Date(2015, 3, 18), end: new Date(2015, 3, 20), group:"BTCC", className:"touringcar", content:"Rounds 4, 5 & 6",id:"582@motocal.net"},
+	  {start: new Date(2015, 3, 23), end: new Date(2015, 3, 27), group:"WRC", className:"rally", content:"Rally Argentina",id:"595@motocal.net"},
+	  {start: new Date(2015, 3, 24), end: new Date(2015, 3, 27), group:"WorldRX", className:"rally", content:"Portugal",id:"686@motocal.net"},
+	  {start: new Date(2015, 3, 24), end: new Date(2015, 3, 27), group:"IndyCar", className:"openwheel", content:"Indy Grand Prix of Alabama",id:"755@motocal.net"},
+	  {start: new Date(2015, 3, 25), end: new Date(2015, 3, 27), group:"WSR", className:"openwheel", content:"Spain",id:"742@motocal.net"},
+	  {start: new Date(2015, 4, 1), end: new Date(2015, 4, 4), group:"MotoGP", className:"motorcycle", content:"Spain",id:"542@motocal.net"},
+	  {start: new Date(2015, 4, 1), end: new Date(2015, 4, 4), group:"WorldRX", className:"rally", content:"Hockenheim",id:"768@motocal.net"},
+	  {start: new Date(2015, 4, 1), end: new Date(2015, 4, 4), group:"DTM", className:"touringcar", content:"Hockenheim",id:"650@motocal.net"},
+	  {start: new Date(2015, 4, 1), end: new Date(2015, 4, 4), group:"WTCC", className:"touringcar", content:"Hungary",id:"719@motocal.net"},
+	  {start: new Date(2015, 4, 1), end: new Date(2015, 4, 4), group:"V8SC", className:"touringcar", content:"Perth SuperSprint",id:"662@motocal.net"},
+	  {start: new Date(2015, 4, 2), end: new Date(2015, 4, 5), group:"BSB", className:"motorcycle", content:"Round 3",id:"606@motocal.net"},
+	  {start: new Date(2015, 4, 2), end: new Date(2015, 4, 3), group:"WEC", className:"endurance", content:"6 Hours of Spa-Francorchamps",id:"675@motocal.net"},
+	  {start: new Date(2015, 4, 7), end: new Date(2015, 4, 10), group:"IndyCar", className:"openwheel", content:"Grand Prix of Indianapolis",id:"756@motocal.net"},
+	  {start: new Date(2015, 4, 8), end: new Date(2015, 4, 11), group:"F1", className:"openwheel", content:"Spain",id:"634@motocal.net"},
+	  {start: new Date(2015, 4, 8), end: new Date(2015, 4, 11), group:"SBK", className:"motorcycle", content:"Italy",id:"620@motocal.net"},
+	  {start: new Date(2015, 4, 9), end: new Date(2015, 4, 10), group:"Formula E", className:"openwheel", content:"Monaco",id:"536@motocal.net"},
+	  {start: new Date(2015, 4, 9), end: new Date(2015, 4, 11), group:"BTCC", className:"touringcar", content:"Rounds 7, 8 & 9",id:"583@motocal.net"},
+	  {start: new Date(2015, 4, 10), end: new Date(2015, 4, 17), group:"Roads", className:"motorcycle", content:"North West 200",id:"682@motocal.net"},
+	  {start: new Date(2015, 4, 15), end: new Date(2015, 4, 17), group:"WTCC", className:"touringcar", content:"Germany",id:"720@motocal.net"},
+	  {start: new Date(2015, 4, 15), end: new Date(2015, 4, 18), group:"WorldRX", className:"rally", content:"Belgium",id:"687@motocal.net"},
+	  {start: new Date(2015, 4, 15), end: new Date(2015, 4, 18), group:"V8SC", className:"touringcar", content:"Winton SuperSprint",id:"663@motocal.net"},
+	  {start: new Date(2015, 4, 15), end: new Date(2015, 4, 18), group:"MotoGP", className:"motorcycle", content:"France",id:"543@motocal.net"},
+	  {start: new Date(2015, 4, 15), end: new Date(2015, 4, 18), group:"MotoAmerica", className:"motorcycle", content:"VIR",id:"707@motocal.net"},
+	  {start: new Date(2015, 4, 16), end: new Date(2015, 4, 17), group:"SGP", className:"rally", content:"Tampere",id:"730@motocal.net"},
+	  {start: new Date(2015, 4, 21), end: new Date(2015, 4, 25), group:"WRC", className:"rally", content:"Rally de Portugal",id:"594@motocal.net"},
+	  {start: new Date(2015, 4, 21), end: new Date(2015, 4, 25), group:"F1", className:"openwheel", content:"Monaco",id:"635@motocal.net"},
+	  {start: new Date(2015, 4, 22), end: new Date(2015, 4, 25), group:"WorldRX", className:"rally", content:"Great Britain",id:"688@motocal.net"},
+	  {start: new Date(2015, 4, 22), end: new Date(2015, 4, 25), group:"SBK", className:"motorcycle", content:"UK",id:"621@motocal.net"},
+	  {start: new Date(2015, 4, 22), end: new Date(2015, 4, 25), group:"IndyCar", className:"openwheel", content:"Indianapolis 500",id:"757@motocal.net"},
+	  {start: new Date(2015, 4, 23), end: new Date(2015, 4, 24), group:"SGP", className:"rally", content:"Prague",id:"731@motocal.net"},
+	  {start: new Date(2015, 4, 23), end: new Date(2015, 4, 24), group:"Formula E", className:"openwheel", content:"Germany",id:"537@motocal.net"},
+	  {start: new Date(2015, 4, 24), end: new Date(2015, 4, 25), group:"WSR", className:"openwheel", content:"Monaco",id:"743@motocal.net"},
+	  {start: new Date(2015, 4, 29), end: new Date(2015, 5, 1), group:"MotoAmerica", className:"motorcycle", content:"Road America",id:"708@motocal.net"},
+	  {start: new Date(2015, 4, 29), end: new Date(2015, 5, 1), group:"IndyCar", className:"openwheel", content:"Dual in Detroit",id:"758@motocal.net"},
+	  {start: new Date(2015, 4, 29), end: new Date(2015, 5, 1), group:"MotoGP", className:"motorcycle", content:"Italy",id:"562@motocal.net"},
+	  {start: new Date(2015, 4, 29), end: new Date(2015, 5, 1), group:"DTM", className:"touringcar", content:"Lausitzring",id:"651@motocal.net"},
+	  {start: new Date(2015, 4, 30), end: new Date(2015, 5, 13), group:"Roads", className:"motorcycle", content:"Isle of Man TT",id:"683@motocal.net"},
+	  {start: new Date(2015, 4, 30), end: new Date(2015, 5, 1), group:"WSR", className:"openwheel", content:"Belgium",id:"745@motocal.net"},
+	  {start: new Date(2015, 5, 4), end: new Date(2015, 5, 7), group:"IndyCar", className:"openwheel", content:"Firestone 600",id:"759@motocal.net"},
+	  {start: new Date(2015, 5, 5), end: new Date(2015, 5, 8), group:"SBK", className:"motorcycle", content:"Portugal",id:"622@motocal.net"},
+	  {start: new Date(2015, 5, 5), end: new Date(2015, 5, 8), group:"F1", className:"openwheel", content:"Canada",id:"636@motocal.net"},
+	  {start: new Date(2015, 5, 5), end: new Date(2015, 5, 8), group:"WTCC", className:"touringcar", content:"Russia",id:"721@motocal.net"},
+	  {start: new Date(2015, 5, 6), end: new Date(2015, 5, 7), group:"Formula E", className:"openwheel", content:"Russia",id:"716@motocal.net"},
+	  {start: new Date(2015, 5, 6), end: new Date(2015, 5, 8), group:"BTCC", className:"touringcar", content:"Rounds 10, 11 & 12",id:"584@motocal.net"},
+	  {start: new Date(2015, 5, 11), end: new Date(2015, 5, 15), group:"WRC", className:"rally", content:"Rally d'Italia Sardegna",id:"596@motocal.net"},
+	  {start: new Date(2015, 5, 12), end: new Date(2015, 5, 15), group:"MotoGP", className:"motorcycle", content:"Catalunya",id:"545@motocal.net"},
+	  {start: new Date(2015, 5, 12), end: new Date(2015, 5, 15), group:"IndyCar", className:"openwheel", content:"Indy Toronto",id:"760@motocal.net"},
+	  {start: new Date(2015, 5, 12), end: new Date(2015, 5, 15), group:"MotoAmerica", className:"motorcycle", content:"Barber",id:"709@motocal.net"},
+	  {start: new Date(2015, 5, 13), end: new Date(2015, 5, 15), group:"WSR", className:"openwheel", content:"Hungary",id:"746@motocal.net"},
+	  {start: new Date(2015, 5, 13), end: new Date(2015, 5, 15), group:"WEC", className:"endurance", content:"24 Heures du Mans",id:"676@motocal.net"},
+	  {start: new Date(2015, 5, 19), end: new Date(2015, 5, 22), group:"V8SC", className:"touringcar", content:"Skycity Triple Crown",id:"664@motocal.net"},
+	  {start: new Date(2015, 5, 19), end: new Date(2015, 5, 22), group:"WTCC", className:"touringcar", content:"Slovakia",id:"722@motocal.net"},
+	  {start: new Date(2015, 5, 19), end: new Date(2015, 5, 22), group:"SBK", className:"motorcycle", content:"Riviera di Rimini",id:"623@motocal.net"},
+	  {start: new Date(2015, 5, 19), end: new Date(2015, 5, 22), group:"BSB", className:"motorcycle", content:"Round 4",id:"607@motocal.net"},
+	  {start: new Date(2015, 5, 19), end: new Date(2015, 5, 22), group:"F1", className:"openwheel", content:"Austria",id:"637@motocal.net"},
+	  {start: new Date(2015, 5, 19), end: new Date(2015, 5, 22), group:"WorldRX", className:"rally", content:"Germany",id:"689@motocal.net"},
+	  {start: new Date(2015, 5, 25), end: new Date(2015, 5, 28), group:"MotoGP", className:"motorcycle", content:"Netherlands",id:"546@motocal.net"},
+	  {start: new Date(2015, 5, 25), end: new Date(2015, 5, 28), group:"IndyCar", className:"openwheel", content:"MAVTV 500",id:"761@motocal.net"},
+	  {start: new Date(2015, 5, 26), end: new Date(2015, 5, 29), group:"WTCC", className:"touringcar", content:"France",id:"723@motocal.net"},
+	  {start: new Date(2015, 5, 26), end: new Date(2015, 5, 29), group:"DTM", className:"touringcar", content:"Norisring",id:"652@motocal.net"},
+	  {start: new Date(2015, 5, 26), end: new Date(2015, 5, 29), group:"MotoAmerica", className:"motorcycle", content:"Miller",id:"710@motocal.net"},
+	  {start: new Date(2015, 5, 27), end: new Date(2015, 5, 29), group:"BTCC", className:"touringcar", content:"Rounds 13, 14 & 15",id:"585@motocal.net"},
+	  {start: new Date(2015, 5, 27), end: new Date(2015, 5, 29), group:"Formula E", className:"openwheel", content:"United Kingdom",id:"538@motocal.net"},
+	  {start: new Date(2015, 6, 2), end: new Date(2015, 6, 6), group:"WRC", className:"rally", content:"Rally Poland",id:"597@motocal.net"},
+	  {start: new Date(2015, 6, 3), end: new Date(2015, 6, 6), group:"F1", className:"openwheel", content:"Britain",id:"638@motocal.net"},
+	  {start: new Date(2015, 6, 3), end: new Date(2015, 6, 6), group:"WorldRX", className:"rally", content:"Sweden",id:"690@motocal.net"},
+	  {start: new Date(2015, 6, 3), end: new Date(2015, 6, 6), group:"BSB", className:"motorcycle", content:"Round 5",id:"608@motocal.net"},
+	  {start: new Date(2015, 6, 4), end: new Date(2015, 6, 5), group:"SGP", className:"rally", content:"Cardiff",id:"732@motocal.net"},
+	  {start: new Date(2015, 6, 6), end: new Date(2015, 6, 10), group:"Roads", className:"motorcycle", content:"Southern 100",id:"714@motocal.net"},
+	  {start: new Date(2015, 6, 10), end: new Date(2015, 6, 13), group:"MotoGP", className:"motorcycle", content:"Germany",id:"565@motocal.net"},
+	  {start: new Date(2015, 6, 10), end: new Date(2015, 6, 13), group:"DTM", className:"touringcar", content:"Zandvoort",id:"653@motocal.net"},
+	  {start: new Date(2015, 6, 10), end: new Date(2015, 6, 13), group:"IndyCar", className:"openwheel", content:"Wisconsin 250",id:"763@motocal.net"},
+	  {start: new Date(2015, 6, 10), end: new Date(2015, 6, 13), group:"V8SC", className:"touringcar", content:"Townsville 400",id:"665@motocal.net"},
+	  {start: new Date(2015, 6, 10), end: new Date(2015, 6, 13), group:"WTCC", className:"touringcar", content:"Portugal",id:"724@motocal.net"},
+	  {start: new Date(2015, 6, 11), end: new Date(2015, 6, 13), group:"WSR", className:"openwheel", content:"Austria",id:"747@motocal.net"},
+	  {start: new Date(2015, 6, 16), end: new Date(2015, 6, 19), group:"IndyCar", className:"openwheel", content:"Iowa Corn Indy 300",id:"764@motocal.net"},
+	  {start: new Date(2015, 6, 17), end: new Date(2015, 6, 20), group:"SBK", className:"motorcycle", content:"USA",id:"625@motocal.net"},
+	  {start: new Date(2015, 6, 17), end: new Date(2015, 6, 20), group:"BSB", className:"motorcycle", content:"Round 6",id:"609@motocal.net"},
+	  {start: new Date(2015, 6, 17), end: new Date(2015, 6, 20), group:"MotoAmerica", className:"motorcycle", content:"Mazda Raceway",id:"711@motocal.net"},
+	  {start: new Date(2015, 6, 18), end: new Date(2015, 6, 19), group:"SGP", className:"rally", content:"Daugavpils",id:"733@motocal.net"},
+	  {start: new Date(2015, 6, 24), end: new Date(2015, 6, 27), group:"F1", className:"openwheel", content:"Hungary",id:"640@motocal.net"},
+	  {start: new Date(2015, 6, 25), end: new Date(2015, 6, 26), group:"SGP", className:"rally", content:"Målilla",id:"734@motocal.net"},
+	  {start: new Date(2015, 6, 26), end: new Date(2015, 6, 27), group:"EWC", className:"endurance", content:"Suzuka 8 Hours",id:"702@motocal.net"},
+	  {start: new Date(2015, 6, 30), end: new Date(2015, 7, 3), group:"WRC", className:"rally", content:"Rally Finland",id:"598@motocal.net"},
+	  {start: new Date(2015, 6, 31), end: new Date(2015, 7, 3), group:"BSB", className:"motorcycle", content:"Round 7",id:"610@motocal.net"},
+	  {start: new Date(2015, 6, 31), end: new Date(2015, 7, 3), group:"V8SC", className:"touringcar", content:"Ipswich SuperSprint",id:"666@motocal.net"},
+	  {start: new Date(2015, 6, 31), end: new Date(2015, 7, 3), group:"DTM", className:"touringcar", content:"Spielberg",id:"654@motocal.net"},
+	  {start: new Date(2015, 6, 31), end: new Date(2015, 7, 3), group:"IndyCar", className:"openwheel", content:"Honda Indy 200",id:"765@motocal.net"},
+	  {start: new Date(2015, 6, 31), end: new Date(2015, 7, 3), group:"SBK", className:"motorcycle", content:"Malaysia",id:"626@motocal.net"},
+	  {start: new Date(2015, 7, 3), end: new Date(2015, 7, 9), group:"Roads", className:"motorcycle", content:"Ulster Grand Prix",id:"684@motocal.net"},
+	  {start: new Date(2015, 7, 7), end: new Date(2015, 7, 9), group:"WorldRX", className:"rally", content:"Canada",id:"691@motocal.net"},
+	  {start: new Date(2015, 7, 7), end: new Date(2015, 7, 10), group:"MotoAmerica", className:"motorcycle", content:"INDY",id:"712@motocal.net"},
+	  {start: new Date(2015, 7, 7), end: new Date(2015, 7, 10), group:"MotoGP", className:"motorcycle", content:"Indianapolis",id:"548@motocal.net"},
+	  {start: new Date(2015, 7, 8), end: new Date(2015, 7, 10), group:"BTCC", className:"touringcar", content:"Rounds 16, 17 & 18",id:"586@motocal.net"},
+	  {start: new Date(2015, 7, 8), end: new Date(2015, 7, 9), group:"SGP", className:"rally", content:"Horsens",id:"735@motocal.net"},
+	  {start: new Date(2015, 7, 10), end: new Date(2015, 7, 12), group:"Formula E", className:"openwheel", content:"Pre-season test 1",id:"769@motocal.net"},
+	  {start: new Date(2015, 7, 14), end: new Date(2015, 7, 17), group:"MotoGP", className:"motorcycle", content:"Czech Republic",id:"549@motocal.net"},
+	  {start: new Date(2015, 7, 17), end: new Date(2015, 7, 19), group:"Formula E", className:"openwheel", content:"Pre-season test 2",id:"770@motocal.net"},
+	  {start: new Date(2015, 7, 20), end: new Date(2015, 7, 24), group:"WRC", className:"rally", content:"Rallye Deutschland",id:"599@motocal.net"},
+	  {start: new Date(2015, 7, 21), end: new Date(2015, 7, 24), group:"IndyCar", className:"openwheel", content:"Pocono IndyCar 500",id:"766@motocal.net"},
+	  {start: new Date(2015, 7, 21), end: new Date(2015, 7, 24), group:"BSB", className:"motorcycle", content:"Round 8",id:"611@motocal.net"},
+	  {start: new Date(2015, 7, 21), end: new Date(2015, 7, 24), group:"WorldRX", className:"rally", content:"Norway",id:"692@motocal.net"},
+	  {start: new Date(2015, 7, 21), end: new Date(2015, 7, 24), group:"F1", className:"openwheel", content:"Belgium",id:"641@motocal.net"},
+	  {start: new Date(2015, 7, 21), end: new Date(2015, 7, 24), group:"V8SC", className:"touringcar", content:"Sydney Motorsport Park SuperSprint",id:"667@motocal.net"},
+	  {start: new Date(2015, 7, 22), end: new Date(2015, 7, 23), group:"EWC", className:"endurance", content:"Oschersleben 8 Hours",id:"703@motocal.net"},
+	  {start: new Date(2015, 7, 22), end: new Date(2015, 8, 5), group:"Roads", className:"motorcycle", content:"Classic TT & Manx GP",id:"715@motocal.net"},
+	  {start: new Date(2015, 7, 22), end: new Date(2015, 7, 24), group:"BTCC", className:"touringcar", content:"Rounds 19, 20 & 21",id:"587@motocal.net"},
+	  {start: new Date(2015, 7, 24), end: new Date(2015, 7, 26), group:"Formula E", className:"openwheel", content:"Pre-season test 3",id:"771@motocal.net"},
+	  {start: new Date(2015, 7, 28), end: new Date(2015, 7, 31), group:"DTM", className:"touringcar", content:"Moscow Raceway",id:"655@motocal.net"},
+	  {start: new Date(2015, 7, 28), end: new Date(2015, 7, 31), group:"IndyCar", className:"openwheel", content:"Grand Prix of Sonoma",id:"767@motocal.net"},
+	  {start: new Date(2015, 7, 28), end: new Date(2015, 7, 31), group:"MotoGP", className:"motorcycle", content:"Great Britain",id:"568@motocal.net"},
+	  {start: new Date(2015, 7, 29), end: new Date(2015, 7, 30), group:"SGP", className:"rally", content:"Gorzów",id:"737@motocal.net"},
+	  {start: new Date(2015, 7, 30), end: new Date(2015, 7, 31), group:"WEC", className:"endurance", content:"6 Hours of N&uuml;rburgring",id:"677@motocal.net"},
+	  {start: new Date(2015, 8, 4), end: new Date(2015, 8, 7), group:"BSB", className:"motorcycle", content:"Round 9",id:"612@motocal.net"},
+	  {start: new Date(2015, 8, 4), end: new Date(2015, 8, 7), group:"WorldRX", className:"rally", content:"France",id:"693@motocal.net"},
+	  {start: new Date(2015, 8, 4), end: new Date(2015, 8, 7), group:"F1", className:"openwheel", content:"Italy",id:"642@motocal.net"},
+	  {start: new Date(2015, 8, 5), end: new Date(2015, 8, 7), group:"WSR", className:"openwheel", content:"United Kingdom",id:"748@motocal.net"},
+	  {start: new Date(2015, 8, 5), end: new Date(2015, 8, 7), group:"BTCC", className:"touringcar", content:"Rounds 22, 23 & 24",id:"588@motocal.net"},
+	  {start: new Date(2015, 8, 10), end: new Date(2015, 8, 14), group:"WRC", className:"rally", content:"Rally Australia",id:"600@motocal.net"},
+	  {start: new Date(2015, 8, 11), end: new Date(2015, 8, 14), group:"V8SC", className:"touringcar", content:"Sandown 500",id:"668@motocal.net"},
+	  {start: new Date(2015, 8, 11), end: new Date(2015, 8, 14), group:"MotoAmerica", className:"motorcycle", content:"New Jersey",id:"713@motocal.net"},
+	  {start: new Date(2015, 8, 11), end: new Date(2015, 8, 14), group:"MotoGP", className:"motorcycle", content:"San Marino",id:"551@motocal.net"},
+	  {start: new Date(2015, 8, 11), end: new Date(2015, 8, 14), group:"WTCC", className:"touringcar", content:"Japan",id:"725@motocal.net"},
+	  {start: new Date(2015, 8, 11), end: new Date(2015, 8, 14), group:"DTM", className:"touringcar", content:"Oschersleben",id:"656@motocal.net"},
+	  {start: new Date(2015, 8, 12), end: new Date(2015, 8, 14), group:"WSR", className:"openwheel", content:"Germany",id:"749@motocal.net"},
+	  {start: new Date(2015, 8, 12), end: new Date(2015, 8, 13), group:"SGP", className:"rally", content:"Krško",id:"738@motocal.net"},
+	  {start: new Date(2015, 8, 18), end: new Date(2015, 8, 21), group:"SBK", className:"motorcycle", content:"Spain",id:"627@motocal.net"},
+	  {start: new Date(2015, 8, 18), end: new Date(2015, 8, 21), group:"BSB", className:"motorcycle", content:"Round 10",id:"613@motocal.net"},
+	  {start: new Date(2015, 8, 18), end: new Date(2015, 8, 21), group:"F1", className:"openwheel", content:"Singapore",id:"643@motocal.net"},
+	  {start: new Date(2015, 8, 18), end: new Date(2015, 8, 21), group:"WorldRX", className:"rally", content:"Barcelona",id:"694@motocal.net"},
+	  {start: new Date(2015, 8, 19), end: new Date(2015, 8, 20), group:"WEC", className:"endurance", content:"6 Hours of Circuit of the Americas",id:"678@motocal.net"},
+	  {start: new Date(2015, 8, 19), end: new Date(2015, 8, 21), group:"EWC", className:"endurance", content:"Bol d’Or",id:"704@motocal.net"},
+	  {start: new Date(2015, 8, 25), end: new Date(2015, 8, 28), group:"MotoGP", className:"motorcycle", content:"Aragon",id:"570@motocal.net"},
+	  {start: new Date(2015, 8, 25), end: new Date(2015, 8, 28), group:"DTM", className:"touringcar", content:"N&uuml;rburgring",id:"657@motocal.net"},
+	  {start: new Date(2015, 8, 25), end: new Date(2015, 8, 28), group:"WTCC", className:"touringcar", content:"China",id:"726@motocal.net"},
+	  {start: new Date(2015, 8, 25), end: new Date(2015, 8, 28), group:"F1", className:"openwheel", content:"Japan",id:"644@motocal.net"},
+	  {start: new Date(2015, 8, 26), end: new Date(2015, 8, 28), group:"BTCC", className:"touringcar", content:"Rounds 25, 26 & 27",id:"589@motocal.net"},
+	  {start: new Date(2015, 8, 26), end: new Date(2015, 8, 27), group:"SGP", className:"rally", content:"Stockholm",id:"739@motocal.net"},
+	  {start: new Date(2015, 8, 26), end: new Date(2015, 8, 28), group:"WSR", className:"openwheel", content:"France",id:"750@motocal.net"},
+	  {start: new Date(2015, 9, 1), end: new Date(2015, 9, 5), group:"WRC", className:"rally", content:"Rallye de France",id:"601@motocal.net"},
+	  {start: new Date(2015, 9, 2), end: new Date(2015, 9, 5), group:"SBK", className:"motorcycle", content:"France",id:"628@motocal.net"},
+	  {start: new Date(2015, 9, 2), end: new Date(2015, 9, 5), group:"BSB", className:"motorcycle", content:"Round 11",id:"614@motocal.net"},
+	  {start: new Date(2015, 9, 2), end: new Date(2015, 9, 5), group:"WorldRX", className:"rally", content:"Turkey",id:"695@motocal.net"},
+	  {start: new Date(2015, 9, 3), end: new Date(2015, 9, 4), group:"SGP", className:"rally", content:"Toruń",id:"740@motocal.net"},
+	  {start: new Date(2015, 9, 8), end: new Date(2015, 9, 12), group:"V8SC", className:"touringcar", content:"Bathurst 1000",id:"669@motocal.net"},
+	  {start: new Date(2015, 9, 9), end: new Date(2015, 9, 12), group:"F1", className:"openwheel", content:"Russia",id:"645@motocal.net"},
+	  {start: new Date(2015, 9, 9), end: new Date(2015, 9, 12), group:"MotoGP", className:"motorcycle", content:"Japan",id:"553@motocal.net"},
+	  {start: new Date(2015, 9, 10), end: new Date(2015, 9, 12), group:"BTCC", className:"touringcar", content:"Rounds 28, 29 & 30",id:"590@motocal.net"},
+	  {start: new Date(2015, 9, 11), end: new Date(2015, 9, 12), group:"WEC", className:"endurance", content:"6 Hours of Fuji",id:"679@motocal.net"},
+	  {start: new Date(2015, 9, 16), end: new Date(2015, 9, 19), group:"WorldRX", className:"rally", content:"Italy",id:"696@motocal.net"},
+	  {start: new Date(2015, 9, 16), end: new Date(2015, 9, 19), group:"MotoGP", className:"motorcycle", content:"Australia",id:"572@motocal.net"},
+	  {start: new Date(2015, 9, 16), end: new Date(2015, 9, 19), group:"DTM", className:"touringcar", content:"Hockenheim",id:"658@motocal.net"},
+	  {start: new Date(2015, 9, 16), end: new Date(2015, 9, 19), group:"BSB", className:"motorcycle", content:"Round 12",id:"615@motocal.net"},
+	  {start: new Date(2015, 9, 16), end: new Date(2015, 9, 19), group:"SBK", className:"motorcycle", content:"Qatar",id:"629@motocal.net"},
+	  {start: new Date(2015, 9, 17), end: new Date(2015, 9, 19), group:"WSR", className:"openwheel", content:"Spain",id:"751@motocal.net"},
+	  {start: new Date(2015, 9, 22), end: new Date(2015, 9, 26), group:"WRC", className:"rally", content:"Rally de Espana",id:"602@motocal.net"},
+	  {start: new Date(2015, 9, 23), end: new Date(2015, 9, 26), group:"V8SC", className:"touringcar", content:"Gold Coast 600",id:"670@motocal.net"},
+	  {start: new Date(2015, 9, 23), end: new Date(2015, 9, 26), group:"MotoGP", className:"motorcycle", content:"Malaysia",id:"573@motocal.net"},
+	  {start: new Date(2015, 9, 23), end: new Date(2015, 9, 26), group:"F1", className:"openwheel", content:"United States",id:"646@motocal.net"},
+	  {start: new Date(2015, 9, 24), end: new Date(2015, 9, 25), group:"SGP", className:"rally", content:"Melbourne",id:"741@motocal.net"},
+	  {start: new Date(2015, 9, 30), end: new Date(2015, 10, 2), group:"F1", className:"openwheel", content:"Mexico",id:"647@motocal.net"},
+	  {start: new Date(2015, 9, 30), end: new Date(2015, 10, 2), group:"WTCC", className:"touringcar", content:"Thailand",id:"727@motocal.net"},
+	  {start: new Date(2015, 10, 1), end: new Date(2015, 10, 2), group:"WEC", className:"endurance", content:"6 Hours of Shanghai",id:"680@motocal.net"},
+	  {start: new Date(2015, 10, 6), end: new Date(2015, 10, 9), group:"MotoGP", className:"motorcycle", content:"Valencia",id:"556@motocal.net"},
+	  {start: new Date(2015, 10, 6), end: new Date(2015, 10, 9), group:"V8SC", className:"touringcar", content:"ITM 500 Auckland",id:"671@motocal.net"},
+	  {start: new Date(2015, 10, 12), end: new Date(2015, 10, 16), group:"WRC", className:"rally", content:"Wales Rally GB",id:"603@motocal.net"},
+	  {start: new Date(2015, 10, 13), end: new Date(2015, 10, 16), group:"F1", className:"openwheel", content:"Brazil",id:"648@motocal.net"},
+	  {start: new Date(2015, 10, 19), end: new Date(2015, 10, 23), group:"Roads", className:"motorcycle", content:"Macau Grand Prix",id:"685@motocal.net"},
+	  {start: new Date(2015, 10, 20), end: new Date(2015, 10, 23), group:"WTCC", className:"touringcar", content:"Qatar",id:"728@motocal.net"},
+	  {start: new Date(2015, 10, 20), end: new Date(2015, 10, 23), group:"V8SC", className:"touringcar", content:"Phillip Island SuperSprint",id:"672@motocal.net"},
+	  {start: new Date(2015, 10, 21), end: new Date(2015, 10, 22), group:"WEC", className:"endurance", content:"6 Hours of Bahrain",id:"681@motocal.net"},
+	  {start: new Date(2015, 10, 27), end: new Date(2015, 10, 30), group:"WorldRX", className:"rally", content:"Argentina",id:"700@motocal.net"},
+	  {start: new Date(2015, 10, 27), end: new Date(2015, 10, 30), group:"F1", className:"openwheel", content:"Abu Dhabi",id:"649@motocal.net"},
+	  {start: new Date(2015, 11, 4), end: new Date(2015, 11, 7), group:"V8SC", className:"touringcar", content:"Sydney 500",id:"673@motocal.net"},
+	  {start: new Date(2015, 2, 9), end: new Date(2015, 2, 11), group:"GP2", className:"openwheel", content:"Yas Marina Test",id:"1@gp2series.com"},
+	  {start: new Date(2015, 3, 1), end: new Date(2015, 3, 3), group:"GP2", className:"openwheel", content:"Sakhir Test",id:"2@gp2series.com"},
+	  {start: new Date(2015, 3, 17), end: new Date(2015, 3, 19), group:"GP2", className:"openwheel", content:"Sakhir, Bahrain",id:"3@gp2series.com"},
+	  {start: new Date(2015, 4, 8), end: new Date(2015, 4, 10), group:"GP2", className:"openwheel", content:"Barcelona, Spain",id:"4@gp2series.com"},
+	  {start: new Date(2015, 4, 21), end: new Date(2015, 4, 23), group:"GP2", className:"openwheel", content:"Monte Carlo, Monaco",id:"5@gp2series.com"},
+	  {start: new Date(2015, 5, 19), end: new Date(2015, 5, 21), group:"GP2", className:"openwheel", content:"Spielber, Austria",id:"6@gp2series.com"},
+	  {start: new Date(2015, 6, 3), end: new Date(2015, 6, 5), group:"GP2", className:"openwheel", content:"Silverstone, Great-Britain",id:"7@gp2series.com"},
+	  {start: new Date(2015, 6, 24), end: new Date(2015, 6, 26), group:"GP2", className:"openwheel", content:"Budapest, Hungary",id:"8@gp2series.com"},
+	  {start: new Date(2015, 7, 21), end: new Date(2015, 7, 23), group:"GP2", className:"openwheel", content:"Spa-Francorchamps, Belgium",id:"9@gp2series.com"},
+	  {start: new Date(2015, 8, 4), end: new Date(2015, 8, 6), group:"GP2", className:"openwheel", content:"Monza, Italy",id:"10@gp2series.com"},
+	  {start: new Date(2015, 9, 9), end: new Date(2015, 9, 11), group:"GP2", className:"openwheel", content:"Sochi, Russia",id:"11@gp2series.com"},
+	  {start: new Date(2015, 10, 27), end: new Date(2015, 10, 29), group:"GP2", className:"openwheel", content:"Yas Marina, UAE",id:"12@gp2series.com"},
+	])
+  
+   
+	// create visualization
+	var container = document.getElementById('visualization');
+	var options = {
+	  // option groupOrder can be a property name or a sort function
+	  // the sort function must compare two groups and return a value
+	  //     > 0 when a > b
+	  //     < 0 when a < b
+	  //       0 when a == b
+	  groupOrder: function (a, b) {
+		return a.value - b.value;
+	  },
+	  groupOrderSwap: function (a, b, groups) {
+		  var v = a.value;
+		  a.value = b.value;
+		  b.value = v;
+	  },
+	  groupTemplate: function(group){
+		var container = document.createElement('div');
+		var label = document.createElement('span');
+		label.innerHTML = group.content + ' ';
+		container.insertAdjacentElement('afterBegin',label);
+		var hide = document.createElement('button');
+		hide.innerHTML = 'hide';
+		hide.style.fontSize = 'small';
+		hide.addEventListener('click',function(){
+		  groups.update({id: group.id, visible: false});
+		});
+		container.insertAdjacentElement('beforeEnd',hide);
+		return container;
+	  },
+	  orientation: 'both',
+	  editable: false,
+	  groupEditable: true,
+	  start: new Date(2023, 8, 30,0),
+	  end: new Date(2023, 8, 30,24)
+	};
+  
+	var timeline = new vis.Timeline(container);
+	timeline.setOptions(options);
+	timeline.setGroups(groups);
+	timeline.setItems(items);
+	window.testtime=timeline;
+  </script>
+	<script>
+	const moduleInit = ['tool','employeepicker'];
+	function gouguInit() {
+		var form = layui.form,table = layui.table,tool=layui.tool, employeepicker = layui.employeepicker,laydate = layui.laydate,dropdown = layui.dropdown;	  
+
+		//日期范围
+		laydate.render({
+			elem: '#barDate',
+			range: ['#start_time', '#end_time'],
+			rangeLinked:true
+		});
+
+		$('[lay-filter="clear"]').on('click',function(){
+			setTimeout(function(){
+				$('[lay-filter="webform"]').click();
+			},10)			
+		})
+		
+		// 选择员工
+		$('body').on('click','[data-event="select"]',function(){
+			var that = $(this);
+			var names = that.val(), ids = $('[name="uid"]').val();
+			employeepicker.init({
+				ids: ids,
+				names: names,
+				type: 0,
+				department_url: "/api/index/get_department_tree",
+				employee_url: "/api/index/get_employee",
+				callback: function (ids, names, dids, departments) {
+					$('[name="uid"]').val(ids);
+					that.val(names);
+					$('[lay-filter="webform"]').click();
+				}
+			})
+		});
+
+		//监听搜索提交
+		form.on('submit(webform)', function(data){
+			let f=data.field;
+			layui.pageTable.reload({where:{keywords:f.keywords,start_time:f.start_time,end_time:f.end_time,uid:f.uid},page:{curr:1}});
+			return false;
+		});
+
+		layui.pageTable = table.render({
+			elem: '#test'
+			,toolbar: '#toolbarDemo'
+			,defaultToolbar:['filter', {title:'エクスポート',layEvent: 'LAYTABLE_EXCEL',icon: 'layui-icon-export'}]
+			,title:'スケジュール'
+			,url: "/oa/plan/index"
+			,page: true //开启分页
+			,limit: 20
+			,cellMinWidth: 80
+			,cols: [[ //表头
+				{field: 'id', title: '連番',fixed: 'left', width:80, align:'center'}
+				,{field: 'type', title: '優先順位', align:'center',width:80,templet:function(d){
+					var html='';
+					if(d.type==1){
+						html = '<span style="color:#FF5722">緊急</span>';
+					}
+					else if(d.type==2){
+						html = '<span style="color:#FFB800">高</span>';
+					}
+					else if(d.type==3){
+						html = '<span style="color:#1E9FFF">中</span>';
+					}
+					else if(d.type==4){
+						html = '<span style="color:#009688">低</span>';
+					}
+					else if(d.type==5){
+						html = '<span style="color:#393D49">なし</span>';
+					}
+					return html;
+				}}
+				,{field: 'start_time', title: '日程時間範囲', align:'center',width:260,templet:function(d){
+					var html=d.start_time+'から'+d.end_time;
+					return html;
+				}}
+				,{field: 'title', title: 'スケジュール内容'}
+				,{field: 'remind_time', title: '通知時間', align:'center',width:136}
+				,{field: 'right', title: '操作',fixed:'right', width:150, align:'center',templet:function(d){
+					var html='<div class="layui-btn-group">';
+					html+='<button class="layui-btn layui-btn-xs layui-btn-normal"  lay-event="view">詳細</button>';
+					if(d.admin_id==login_admin){
+						html+='<button class="layui-btn layui-btn-xs" lay-event="edit">編集</button>';
+						html+='<button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">消除</button>';
+					}
+					html+='</div>';
+					return html;
+				}}
+			]]
+		});
+		
+		//表头工具栏事件
+		table.on('toolbar(test)', function(obj){
+			if(obj.event === 'LAYTABLE_EXCEL'){
+				var formSelect = form.val('barsearchform');
+				formSelect.limit=99999;
+				$.ajax({
+					url: '/oa/plan/index',
+					data: formSelect,
+					success:function(res){
+						table.exportFile('test', res.data,'xls');
+					}
+				});
+				return;
+			}
+		})
+
+		//操作
+		table.on('tool(test)', function(obj){
+			var data = obj.data;
+			if(obj.event === 'edit'){
+				$.ajax({
+					url: "/oa/plan/detail",
+					type:'get',
+					data:{id:data.id},
+					success:function(e){
+						if(e.code==0){			
+							var detail={};
+							detail['id']=e.data.id;
+							detail['title']=e.data.title;
+							detail['start_time_a']=e.data.start_time_a;
+							detail['end_time_a']=e.data.end_time_a;		
+							detail['start_time_b']=e.data.start_time_b;
+							detail['end_time_b']=e.data.end_time_b;
+							detail['remark']=e.data.remark;
+							detail['type']=e.data.type;
+							detail['remind_type']=e.data.remind_type;
+							addEvent(detail);
+						}
+					}
+				})	
+				return;				
+			}
+			else if(obj.event === 'view'){
+				$.ajax({
+					url: "/oa/plan/detail",
+					type:'get',
+					data:{id:data.id},
+					success:function(e){
+						if(e.code==0){								
+							viewEvent(e.data);
+						}
+					}
+				})
+				return;				
+			}
+			else if(obj.event === 'del'){
+				layer.confirm('このスケジュールは消除しますか', {
+					icon: 3,
+					title: 'ヒント'
+				}, function (index) {
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							layui.pageTable.reload();
+						}
+					}
+					tool.delete("/oa/plan/delete", { id: obj.data.id }, callback);
+					layer.close(index);
+				});
+				return;				
+			}
+		});
+		
+		//查看日程记录
+		function viewEvent(detail){
+			var work_type='<span style="color:#393D49">なし</span>';
+			if(detail.type==1){
+				work_type = '<span style="color:#FF5722">緊急</span>';
+			}
+			else if(detail.type==2){
+				work_type = '<span style="color:#FFB800">高</span>';
+			}
+			else if(detail.type==3){
+				work_type = '<span style="color:#1E9FFF">中</span>';
+			}
+			else if(detail.type==4){
+				work_type = '<span style="color:#009688">低</span>';
+			}		
+			var content='<div style="width:770px">\
+							<table class="layui-table" style="margin:12px 15px 0;">\
+								<tr>\
+									<td class="layui-td-gray-2">日程時間範囲</td>\
+									<td>'+detail.start_time+' から '+detail.end_time+'</td>\
+									<td class="layui-td-gray">通知時間</td>\
+									<td>'+detail.remind_time+'</td>\
+								</tr>\
+								<tr>\
+									<td class="layui-td-gray-2">スケジュール内容</td>\
+									<td>'+detail.title+'</td>\
+									<td class="layui-td-gray">優先順位</td>\
+									<td>'+work_type+'</td>\
+								</tr>\
+								<tr>\
+									<td class="layui-td-gray-2">日程内容詳細</td>\
+									<td colspan="3">'+detail.remark+'</td>\
+								</tr>\
+							</table>\
+						</div>';
+			layer.open({
+				type:1,
+				title:'スケジュール',
+				area:['800px','336px'],
+				content:content,
+				success:function(){
+					
+				},
+				btn: ['閉める'],
+				btnAlign: 'c',
+				yes: function(idx){
+					layer.close(idx);			
+				}
+			})	
+		}
+		  
+		$('body').on('click','.addLoan',function(){
+			var detail={};
+			detail['id']=0;
+			detail['title']='';
+			detail['start_time_a']='';
+			detail['end_time_a']='';		
+			detail['start_time_b']='09:00';
+			detail['end_time_b']='18:00';		
+			detail['remark']='';
+			detail['type']=0;
+			detail['remind_type']=0;
+			addEvent(detail);		
+		});
+
+
+		function addEvent(detail){			
+			var type='<span style="color:#aaa">選択してください</span>';
+			if(detail.type==1){
+				type = '<span class="layui-badge-dot"></span> 緊急';
+			}
+			else if(detail.type==2){
+				type = '<span class="layui-badge-dot layui-bg-orange"></span> 高';
+			}
+			else if(detail.type==3){
+				type = '<span class="layui-badge-dot layui-bg-blue"></span> 中';
+			}
+			else if(detail.type==4){
+				type = '<span class="layui-badge-dot layui-bg-green"></span> 低';
+			}
+			else if(detail.type==5){
+				type = '<span class="layui-badge-dot layui-bg-black"></span> なし';
+			}
+			
+			var remind_type='通知なし';
+			if(detail.remind_type==1){
+				remind_type = '5分前';
+			}
+			else if(detail.remind_type==2){
+				remind_type = '15分前';
+			}
+			else if(detail.remind_type==3){
+				remind_type = '30分前';
+			}
+			else if(detail.remind_type==4){
+				remind_type = '1時間前';
+			}
+			else if(detail.remind_type==5){
+				remind_type = '2時間前';
+			}else if(detail.remind_type==6){
+				remind_type = '1日前';
+			}
+			
+			var content='<form class="layui-form" style="width:828px">\
+							<table class="layui-table" style="margin:15px 15px 0;">\
+								<tr>\
+									<td class="layui-td-gray-2">日程時間範囲<font>*</font></td>\
+									<td>\
+										<input id="start_time_a" name="start_time_a" style="width:120px; display:inline-block;" autocomplete="off" class="layui-input" value="'+detail.start_time_a+'" readonly lay-verify="required" placeholder="時間を選択してください" lay-reqText="時間を選択してください"><div style="display: inline-block; margin-left:3px; width: 86px;"><select lay-filter="start_time_b" id="start_time_b"></select></div> から <input id="end_time_a" name="end_time_a" style="width:120px; display:inline-block;" autocomplete="off" class="layui-input" value="'+detail.end_time_a+'" readonly lay-verify="required" placeholder="時間を選択してください" lay-reqText="時間を選択してください"><div style="display: inline-block; margin-left:3px; width: 86px;"><select lay-filter="end_time_b" id="end_time_b"></select></div>\
+									</td>\
+									<td class="layui-td-gray">優先順位<font>*</font></td>\
+									<td>\
+										<div class="layui-input" id="type" style="width:120px; line-height:35px;">'+type+'</div>\
+									</td>\
+								</tr>\
+								<tr>\
+									<td class="layui-td-gray">日程内容<font>*</font></td>\
+									<td><input name="title" class="layui-input" value="'+detail.title+'" lay-verify="required" placeholder="日程内容を入力してください" lay-reqText="日程内容を入力してください"></td>\
+									<td class="layui-td-gray">通知<font>*</font></td>\
+									<td>\
+										<div class="layui-input" id="remind_type" style="width:120px; line-height:35px;">'+remind_type+'</div>\
+									</td>\
+								</tr>\
+								<tr>\
+									<td class="layui-td-gray-2">日程詳細説明</td>\
+									<td colspan="3">\
+										<textarea name="remark" form-input="remark" class="layui-textarea" style="min-height:120px;">'+detail.remark+'</textarea>\
+									</td>\
+								</tr>\
+							</table>\
+						</form>';
+			layer.open({
+				type:1,
+				title:'スケジュール',
+				area:['860px','390px'],
+				content:content,
+				success:function(){
+					//日期时间范围
+					laydate.render({
+						elem: '#start_time_a',
+						type: 'date',
+						min: 0,
+						format: 'yyyy-MM-dd',
+						showBottom: false,
+						done:function(a,b,c){
+							detail.start_time_a=a;
+						}
+					});
+
+					//日期时间范围
+					laydate.render({
+						elem: '#end_time_a',
+						type: 'date',
+						min: 0,
+						format: 'yyyy-MM-dd',
+						showBottom: false,
+						done:function(a,b,c){
+							detail.end_time_a=a;
+						}
+					});
+					$('#start_time_a,#end_time_a').empty();
+					
+					var hourArray=[];
+					for(var h=0;h<24;h++){
+						var t=h<10?'0'+h:h
+						var t_1=t+':00',t_2=t+':15',t_3=t+':30',t_4=t+':45';
+						hourArray.push(t_1,t_2,t_3,t_4);
+					}					
+					var html_1='', html_2='',def_h1=detail.start_time_b,def_h2=detail.end_time_b;
+					for(var s=0;s<hourArray.length;s++){
+						var check_1='',check_2='';
+						if(hourArray[s]==def_h1){
+							check_1='selected';
+						}
+						if(hourArray[s]==def_h2){
+							check_2='selected';
+						}
+						html_1 += '<option value="'+hourArray[s]+'" '+check_1+'>'+hourArray[s]+'</option>';
+						html_2 += '<option value="'+hourArray[s]+'" '+check_2+'>'+hourArray[s]+'</option>';
+					}
+					
+					$('#start_time_b').append(html_1);
+					$('#end_time_b').append(html_2);
+					form.render();
+					
+					$('[name="title"]').on('input',function(){
+						var _val=$(this).val();
+						detail.title=_val;
+					});	
+					form.on('select(start_time_b)', function(data){
+						detail.start_time_b=data.value;
+					});
+					form.on('select(end_time_b)', function(data){
+						detail.end_time_b=data.value;
+					});
+					$('[form-input="remark"]').on('input',function(){
+						var _val=$(this).val();
+						detail.remark=_val;
+					});
+
+					dropdown.render({
+						elem: '#type'
+						,data: [{
+						  title: '緊急',
+						  templet: '<span class="layui-badge-dot"></span> 緊急',
+						  id: 1
+						},{
+						  title: '高',
+						  templet: '<span class="layui-badge-dot layui-bg-orange"></span> 高',
+						  id: 2
+						},{
+						  title: '中',
+						  templet: '<span class="layui-badge-dot layui-bg-blue"></span> 中',
+						  id: 3
+						},{
+						  title: '<span class="layui-badge-dot layui-bg-green"></span> 低',
+						  templet: '<span class="layui-badge-dot layui-bg-green"></span> 低',
+						  id: 4
+						},{
+						  title: 'なし',
+						  templet: '<span class="layui-badge-dot layui-bg-black"></span> なし',
+						  id: 5
+						}]
+						,click: function(obj){
+							this.elem.html(obj.title);
+							detail.type = obj.id;
+						}
+						,style: 'width: 120px;'
+					  });
+					  
+					  dropdown.render({
+						elem: '#remind_type'
+						,data: [{
+						  title: '通知なし',
+						  id: 0
+						},{
+						  title: '5分前',
+						  id: 1
+						},{
+						  title: '15分前',
+						  id: 2
+						},{
+						  title: '30分前',
+						  id: 3
+						},{
+						  title: '1時間前',
+						  id: 4
+						},{
+						  title: '2時間前',
+						  id: 5
+						},{
+						  title: '1日前',
+						  id:6
+						}]
+						,click: function(obj){
+						  this.elem.html(obj.title);
+						  detail.remind_type = obj.id;
+						}
+						,style: 'width: 120px;'
+					  });					
+				},
+				btn: ['確定'],
+				btnAlign:'c',
+				yes: function(idx){
+					if(detail.start_time_a=='' || detail.end_time_a==''){
+						layer.msg('日程時間範囲を修正してください');
+						return;
+					}
+					if(detail.type==0){
+						layer.msg('日程優先順位を選択してください');
+						return;
+					}
+					if(detail.title==''){
+						layer.msg('スケジュール内容を入力してください');
+						return;
+					}
+					console.log(detail);
+					$.ajax({
+						url: "/oa/plan/add",
+						type:'post',
+						data:detail,
+						success:function(e){
+							layer.msg(e.msg);
+							if(e.code==0){								
+								layer.close(idx);								
+								layui.pageTable.reload();
+							}
+						}
+					})			
+				}
+			})	
+		}		  
+	}		
+	</script>
+{/block}
+<!-- /脚本 -->

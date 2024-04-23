@@ -1,0 +1,310 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<div class="layui-card">
+	<div class="layui-tab layui-tab-brief" lay-filter="demoTab">
+	  <ul class="layui-tab-title">
+		<li class="layui-this" style="font-size:15px;"><strong>送信報告書</strong></li>
+		<li style="font-size:15px;"><strong>受信報告書</strong></li>
+	  </ul>
+	  <div class="layui-tab-content" style="padding:0">
+		<div class="layui-tab-item layui-show">
+			<form class="layui-form gg-form-bar border-x border-t" lay-filter="barsearchform">
+				<div class="layui-input-inline" id="date">
+					<div class="layui-input-inline" style="width:112px; margin-bottom:0">
+					  <input type="text" autocomplete="off" id="start_time" name="start_time" class="layui-input" placeholder="受信開始日">
+					</div>
+					~
+					<div class="layui-input-inline" style="width:112px; margin-bottom:0">
+					  <input type="text" autocomplete="off" id="end_time" name="end_time" class="layui-input" placeholder="受信終了日">
+					</div>
+				</div>
+				<div class="layui-input-inline" style="width:136px">
+					<select name="type">
+						<option value="">種類選択</option>
+						<option value="1">日報</option>
+						<option value="2">週報</option>
+						<option value="2">月報</option>
+					</select>
+				</div>
+				<div class="layui-input-inline" style="width:200px;">
+					<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+					<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+				</div>
+			</form>
+			<table class="layui-hide" id="test" lay-filter="test"></table>
+		</div>
+		<div class="layui-tab-item">
+			<form class="layui-form gg-form-bar border-x border-t" lay-filter="barsearchform2">
+				<div class="layui-input-inline" id="date1">
+					<div class="layui-input-inline" style="width:112px; margin-bottom:0"">
+					  <input type="text" autocomplete="off" id="start_time1" name="start_time" class="layui-input" placeholder="受信開始日">
+					</div>
+					~
+					<div class="layui-input-inline" style="width:112px; margin-bottom:0"">
+					  <input type="text" autocomplete="off" id="end_time1" name="end_time" class="layui-input" placeholder="受信終了日">
+					</div>
+				</div>
+				<div class="layui-input-inline" style="width:136px">
+					<select name="read">
+						<option value="">状態選択</option>
+						<option value="1">未読</option>
+						<option value="2">既読</option>
+					</select>
+				</div>
+				<div class="layui-input-inline" style="width:136px">
+					<select name="type">
+						<option value="">種類選択</option>
+						<option value="1">日報</option>
+						<option value="2">週報</option>
+						<option value="2">月報</option>
+					</select>
+				</div>
+				<div class="layui-input-inline" style="width:200px;">
+					<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform1"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+					<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+				</div>
+			</form>
+			<table class="layui-hide" id="test1" lay-filter="test1"></table>
+		</div>
+	  </div>
+	</div>
+</div>
+</div>
+
+<script type="text/html" id="toolbarDemo">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-sm" lay-event="add"><i class="layui-icon">&#xe61f;</i>新規報告書</button>
+	</div>
+</script>
+
+<script type="text/html" id="barDemo">
+<div class="layui-btn-group"><button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="view">表示</button>
+  <button class="layui-btn layui-btn-xs" lay-event="edit">編集</button><button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">削除</button></div>
+</script>
+<script type="text/html" id="barDemo1">
+<div class="layui-btn-group"><button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="view">タスク</button>
+  <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">削除</button></div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool','employeepicker'];
+	function gouguInit() {
+		var form = layui.form,table = layui.table,tool=layui.tool, laydate = layui.laydate;
+	  
+		//日期范围
+		laydate.render({
+			elem: '#date',
+			range: ['#start_time', '#end_time'],
+			rangeLinked:true
+		});
+
+		layui.pageTable = table.render({
+			elem: '#test',
+			toolbar: '#toolbarDemo',
+			defaultToolbar:['filter', {title:'エクスポート',layEvent: 'LAYTABLE_EXCEL',icon: 'layui-icon-export'}],
+			title:'作業報告リスト',
+			url: "/oa/work/index", //データインターフェース
+			where:{'send':1},
+			page: true ,//ページングをオンにする
+			limit: 20,
+			cellMinWidth: 80, //セルの最小幅を定義
+			cols: [[ //ヘッダー
+			  {field:'id',title: '連番',width:80,align:'center'},
+			  {field: 'type_title', title: '報告種類',width:88,align:'center'},
+			  {field: 'person_name', title: '受信者', width:240},
+			  {field: 'works', title: '本日業務'},
+			  {field: 'create_time', title: '報告日時', align:'center',width:160},
+			  {field: 'files', title: '添付ファイル(個)',align:'center', width:140},
+			  {field: 'right', title: '操作',fixed:'right', toolbar: '#barDemo', width:132, align:'center'}
+			]],
+		});
+
+		//行ツールイベントを監視する
+		table.on('tool(test)', function(obj){
+			var data = obj.data;
+			if(obj.event === 'edit'){
+				tool.side('/oa/work/add?id='+data.id);
+				return;
+			}
+			if(obj.event === 'del'){
+				layer.confirm('この報告書を削除してもよろしいですか？', {icon: 3, title:'確認'}, function(index){
+					$.ajax({
+						url: "/oa/work/delete",
+						type:'post',
+						data:{id:data.id},
+						success:function(e){
+							layer.msg(e.msg);
+							if (e.code == 0) {
+								obj.del();
+							}
+						}
+					})
+					layer.close(index);
+				});
+			}
+			if(obj.event === 'view'){
+				tool.side('/oa/work/read?id='+data.id);
+				return;
+			}
+		});
+		
+		//ツールバーのイベントを監視する
+		table.on('toolbar(test)', function(obj){
+			if(obj.event === 'add'){
+				addNew();
+				return;
+			}
+			if(obj.event === 'LAYTABLE_EXCEL'){
+				var formSelect = form.val('barsearchform');
+				formSelect.limit=99999;
+				formSelect.send=1;
+				$.ajax({
+					url: '/oa/work/index',
+					data: formSelect,
+					success:function(res){
+						table.exportFile('test', res.data,'xls');
+					}
+				});
+				return;
+			}			
+		});
+		 
+		//検索フォームの送信を監視する
+		form.on('submit(webform)', function(data){
+			let f=data.field;
+			layui.pageTable.reload({where:{send:1,start_time:f.start_time,end_time:f.end_time,type:f.type,read:f.read},page:{curr:1}});
+			return false;
+		});		
+		
+		
+		//日付範囲
+		laydate.render({
+			elem: '#date1',
+			range: ['#start_time1', '#end_time1'],
+			rangeLinked:true
+		});
+
+		layui.pageTable1 = table.render({
+			elem: '#test1',
+			toolbar: '#toolbarDemo',
+			defaultToolbar:['filter', {title:'エクスポート',layEvent: 'LAYTABLE_EXCEL',icon: 'layui-icon-export'}],
+			title:'作業報告リスト',
+			url: "/oa/work/index", //データインターフェース
+			where:{'send':0},
+			page: true ,//ページングをオンにする
+			limit: 20,
+			cellMinWidth: 80, //セルの最小幅を定義
+			cols: [[ //ヘッダー
+			  {field:'id',title: '連番',width:80,align:'center'},
+			  {field: 'type_title', title: '報告種類',width:88,align:'center'},
+			  {field: 'from_name', title: '報告者', width:100,align:'center'},
+			  {field: 'works', title: '本日業務'},
+			  {field: 'send_time', title: '報告日時', align:'center',width:160},
+			  {field: 'read_time', title: '既読かどうか',align:'center', width:86,templet:function(d){
+							var html='<span style="color:#5FB878">既読</span>';
+							if(d.read_time==0){
+								html='<span style="color:#FF5722">未読</span>';
+							}
+							return html;
+						}},
+			  {field: 'files', title: '添付(個)',align:'center', width:86},
+			  {field: 'right', title: '操作',fixed:'right', toolbar: '#barDemo1', width:100, align:'center'}
+			]]
+		});
+		
+		//行ツールイベントを監視する
+		table.on('tool(test1)', function(obj){
+			var data = obj.data;
+			if(obj.event === 'del'){
+				layer.confirm('この報告書を削除してもよろしいですか？', {icon: 3, title:'ヒント'}, function(index){
+					$.ajax({
+						url: "/oa/work/delete",
+						type:'post',
+						data:{id:data.wid},
+						success:function(e){
+							layer.msg(e.msg);
+							if (e.code == 0) {
+								obj.del();
+							}
+						}
+					})
+					layer.close(index);
+				});
+			}
+			if(obj.event === 'view'){
+				tool.side('/oa/work/read?id='+data.wid,'900px');
+				return;
+			}
+		});
+		 
+		//検索フォームの送信を監視する
+		form.on('submit(webform1)', function(data){
+			let f=data.field;
+			layui.pageTable1.reload({where:{send:0,start_time:f.start_time,end_time:f.end_time,type:f.type,read:f.read},page:{curr:1}});
+			return false;
+		});		
+		
+		
+		//ツールバーのイベントを監視する
+		table.on('toolbar(test1)', function(obj){
+			if(obj.event === 'add'){
+				addNew();
+				return;
+			}
+			if(obj.event === 'LAYTABLE_EXCEL'){
+				var formSelect = form.val('barsearchform1');
+				formSelect.limit=99999;
+				formSelect.send=0;
+				$.ajax({
+					url: '/oa/work/index',
+					data: formSelect,
+					success:function(res){
+						table.exportFile('test1', res.data,'xls');
+					}
+				});
+				return;
+			}			
+		});
+		
+		function addNew(){
+			var type=[{'id':1,'title':'日報'},{'id':2,'title':'週報'},{'id':3,'title':'月報'}];
+			layer.open({
+				title:'類型選択',
+				type:1,
+				area:['360px','300px'],
+				content:'<div style="width:325px; padding:15px 15px 0"><div id="selectCoursr"></div></div>',
+				success:function(){
+					tableid=table.render({
+						elem: '#selectCoursr',
+						cols: [[ //ヘッダー
+							{type:'radio',title: '選択'},
+							{field: 'title', title: '報告類型'}
+						]],
+						data: type
+					  });			
+				},
+				btn:['確定'],
+				yes: function(idx){
+					var checkStatus = table.checkStatus(tableid.config.id);
+					var data = checkStatus.data;
+					if(data.length>0){
+						tool.side('/oa/work/add?type='+data[0].id);
+						layer.close(idx);
+					}
+					else{
+						layer.msg('報告類型を選択してください');
+						return false;
+					}
+				}
+			})
+		}
+	}		
+</script>
+{/block}
+<!-- /脚本 -->

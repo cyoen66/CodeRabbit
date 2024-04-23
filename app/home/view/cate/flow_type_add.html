@@ -1,0 +1,123 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">承認類型</h3>
+	{eq name="$id" value="0"}
+	<table class="layui-table">
+		<tr>
+			<td class="layui-td-gray">所属種類</td>
+			<td>
+				<select name="type" lay-reqText="所属種類を選択してください">
+				  <option value="">--選択してください--</option>
+				  {volist name="$type" id="vo"}
+				  <option value="{$vo.id}">{$vo.title}</option>
+				  {/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray">名称<font>*</font></td>
+			<td>
+				<input type="text" name="title" autocomplete="off" placeholder="承認類型の名称を入力してください" lay-verify="required" lay-reqText="承認類型の名称を入力してください" class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">適用部門</td>
+			<td colspan="3">
+				<div class="layui-input-inline" style="width:360px;">
+					<select id="department_ids" name="department_ids" xm-selected="" xm-select="select1" xm-select-skin="default"></select>
+				</div>
+				<span class="red" style="font-size:12px;">（選択しない場合は、デフォルトで全社となります）</span>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">識別子<font>*</font></td>
+			<td>
+				<input type="text" name="name" placeholder="承認類型の識別子を入力してください" value="" autocomplete="off" lay-verify="required" lay-reqText="承認類型の識別子を入力してください" class="layui-input">
+			</td>
+			<td class="layui-td-gray">アイコン<font>*</font></td>
+			<td>
+				<input style="width:200px; display:inline" class="layui-input" type="text" name="icon" value="" placeholder="承認類型のアイコンを入力してください" lay-verify="required" lay-reqText="承認類型のアイコンを入力してください">			
+				例：icon-jichupeizhi<a href="{__GOUGU__}/icon/index.html" target="_blank" style="margin-left:10px; color:#007AFF">[アイコンを見る]</a>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="4">
+				<span style="color: red; font-size: 12px;">注意：新しい承認類型を追加した後、対応するテンプレートファイルも追加する必要があります。テンプレートファイルの名前は識別子と同じにしてください。既存の承認類型テンプレートファイルをコピーして、必要に応じて対応するフォームを変更することをお勧めします。</span>
+			</td>
+		</tr>
+	</table>
+	{else/}
+	<table class="layui-table">
+		<tr>
+			<td class="layui-td-gray">所属種類</td>
+			<td>
+				<select name="type"  lay-reqText="所属種類を選択してください">
+				  <option value="">--選択してください--</option>
+				  {volist name="$type" id="vo"}
+				  <option value="{$vo.id}" {eq name="$detail.type" value="$vo.id"}selected=""{/eq}>{$vo.title}</option>
+				  {/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray">名称<font>*</font></td>
+			<td>
+				<input type="text" name="title" value="{$detail.title}" placeholder="承認類型の名称を入力してください" lay-verify="required" lay-reqText="承認類型の名称を入力してください" class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">適用部門</td>
+			<td colspan="3">
+				<div class="layui-input-inline" style="width:360px;">
+					<select id="department_ids" name="department_ids" xm-selected="{$detail.department_ids}" xm-select="select1" xm-select-skin="default"></select>
+				</div>
+				<span class="red" style="font-size:12px;">（選択しない場合は、デフォルトで全社となります）</span>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">識別子<font>*</font></td>
+			<td>
+				<input type="text" name="name" placeholder="承認類型の識別子を入力してください" value="{$detail.name}" autocomplete="off" lay-verify="required" lay-reqText="承認類型の識別子を入力してください" class="layui-input">
+			</td>
+			<td class="layui-td-gray">アイコン<font>*</font></td>
+			<td>
+				<input style="width:200px; display:inline" class="layui-input" type="text" name="icon" value="{$detail.icon}" placeholder="承認類型のアイコンを入力してください" lay-verify="required" lay-reqText="承認類型のアイコンを入力してください">			
+				<strong class="iconfont {$detail.icon}"></strong><a href="{__GOUGU__}/icon/index.html" target="_blank" style="margin-left:10px; color:#007AFF">[アイコンを見る]</a>
+			</td>
+		</tr>
+	</table>
+	{/eq}
+	<div class="py-3">
+		<input type="hidden" name="id" value="{$id}">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">確定</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+    </div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool','formSelects'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool,formSelects=layui.formSelects;
+		//选择应用部门
+		var selcted = $('#department_ids').attr('xm-selected');
+		formSelects.data('select1', 'server', {
+			url: '/api/index/get_department_select',
+			keyword: selcted,
+		});		
+		//监听提交
+		form.on('submit(webform)', function(data){
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose(1000);				
+				}
+			}
+			tool.post("/home/cate/flow_type_add", data.field, callback);
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

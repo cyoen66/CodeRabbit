@@ -1,0 +1,124 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	{eq name="$id" value="0"}
+	<h3 class="pb-3">お知らせ追加</h3>
+	{else/}
+	<h3 class="pb-3">お知らせ編集</h3>
+	{/eq}
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">タイトル<font>*</font></td>
+			<td>
+				<input type="text" name="title" lay-verify="required" lay-reqText="お知らせのタイトルを入力してください" placeholder="お知らせのタイトルを入力してください" class="layui-input"
+			  {notempty name="$note.title" }value="{$note.title}" {/notempty}>
+			</td>
+			<td class="layui-td-gray">種類<font>*</font></td>
+			<td>
+				<select name="cate_id" lay-verify="required" lay-reqText="分類を選択してください">
+					<option value="">種類を選択してください</option>
+					{notempty name="$note.cate_id"}
+						{volist name=":set_recursion(note_cate())" id="v"}
+						<option value="{$v.id}" {eq name="$note.cate_id" value="$v.id" }selected{/eq}>{$v.title}</option>
+						{/volist}
+					{else/}
+						{volist name=":set_recursion(note_cate())" id="v"}
+						<option value="{$v.id}">{$v.title}</option>
+						{/volist}
+					{/notempty}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">表示期間<font>*</font></td>
+			<td id="date">
+				<div class="layui-input-inline">
+					<input type="text" id="start_time" name="start_time" readonly lay-verify="required" lay-reqText="表示開始日を選んでください" placeholder="表示開始日" class="layui-input" {notempty name="$note.start_time" }value="{$note.start_time | date='Y-m-d'}" {/notempty}>
+				</div>
+				-
+				<div class="layui-input-inline">
+					<input type="text" id="end_time" name="end_time" readonly lay-verify="required" lay-reqText="表示終了日を選択してください" placeholder="表示終了日" class="layui-input" {notempty name="$note.end_time" }value="{$note.end_time | date='Y-m-d'}" {/notempty}>
+				</div>
+			</td>
+			<td class="layui-td-gray-2">ステータス<font>*</font></td>
+			<td>
+				{if condition="$id eq 0"}
+				<input type="radio" name="status" value="1" title="有効" checked>
+				<input type="radio" name="status" value="0" title="無効">
+				{else/}
+				<input type="radio" name="status" value="1" title="有効" {eq name="$note.status" value="1" }checked{/eq}>
+				<input type="radio" name="status" value="0" title="無効" {eq name="$note.status" value="0" }checked{/eq}>
+				{/if}
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">関連リンク</td>
+			<td>
+				<input type="text" name="src" placeholder="リンクを入力してください" class="layui-input" {notempty
+			  name="$note.src" }value="{$note.src}" {/notempty}>
+			</td>
+			<td class="layui-td-gray">順番</td>
+			<td>
+				<input type="text" name="sort" placeholder="順番を入力してください、数字" class="layui-input" {notempty
+			  name="$note.sort" }value="{$note.sort}" {/notempty}>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray" style="vertical-align:top;">お知らせ内容<font>*</font></td>
+			<td colspan="3">
+				<textarea name="content" placeholder="内容を入力してください" class="layui-textarea" id="container" style="border:0;padding:0">{notempty name="$note.content" }{$note.content}{/notempty}</textarea>
+			</td>
+		</tr>
+	</table>
+
+	<div class="py-3">
+		<input type="hidden" name="id" value="{$id}" />
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool','tinymce'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool,laydate = layui.laydate;
+		//日期范围
+		laydate.render({
+			elem: '#date',
+			range: ['#start_time', '#end_time'],
+			rangeLinked:true
+		});
+
+		//编辑器初始化
+		var editor = layui.tinymce;
+		var edit = editor.render({
+			selector: "#container",
+			images_upload_url: '/api/index/upload/sourse/tinymce',//图片上传接口
+			height: 500
+		});
+		
+		//监听提交
+		form.on('submit(webform)', function (data) {
+			data.field.content = tinyMCE.editors['container'].getContent();
+			if (data.field.content == '') {
+				layer.msg('お知らせの内容を修正してください。');
+				return false;
+			}
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose(1000);
+				}
+			}
+			tool.post("/note/index/add", data.field, callback);
+			return false;
+		});
+}
+</script>
+{/block}
+<!-- /脚本 -->

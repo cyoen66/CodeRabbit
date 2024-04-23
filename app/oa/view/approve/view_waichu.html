@@ -1,0 +1,50 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+{include file="/approve/view_style" /}
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">外出申請</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">外出場所</td>
+			<td colspan="3">{$detail.address}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">外出日</td>
+			<td colspan="3">{$detail.start_time} から {$detail.end_time} まで</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">外出時間</td>
+			<td>合計 {$detail.duration} 時間</td>
+			<td class="layui-td-gray">外出日数</td>
+			<td>合計 {$detail.days} 日、{$detail.hours} 時間</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">外出理由</td>
+			<td colspan="3">{$detail.content}</td>
+		</tr>
+		{notempty name="$detail.file_ids"}
+		<tr>
+			<td class="layui-td-gray">関連添付</td>
+			<td colspan="3" style="line-height:inherit">
+				<div class="layui-row">
+					{volist name="$detail.fileArray" id="vo"}
+					<div class="layui-col-md4" id="uploadImg{$vo.id}">{:file_card($vo,'view')}</div>
+					{/volist}
+				</div>
+			</td>
+		</tr>
+		{/notempty}
+	</table>	
+	{include file="/approve/view_step" /}
+</div>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+{include file="/approve/view_script" /}
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,104 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<form class="layui-form gg-form-bar border-t border-x">
+		<div class="layui-input-inline">
+			<input type="text" name="keywords" placeholder="キーワード" class="layui-input" autocomplete="off"/>
+		</div>
+		<div class="layui-input-inline" style="width:200px;">
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+			<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+		</div>
+	</form>
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+	<button class="layui-btn layui-btn-sm" lay-event="add">+ 退職追加</button> <span style="font-size:12px; margin-left:20px; color:#FF5722">退職を削除すると、アクティブな状態が戻れます</span>
+  </div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool ,form = layui.form;
+		layui.pageTable = table.render({
+			elem: '#test'
+			, toolbar: '#toolbarDemo'
+			,defaultToolbar: false
+			, url: "/user/personal/leave"
+			, page: true //开启分页
+			, limit: 20
+			, cols: [[
+				{ field: 'id', width: 80, title: '連番', align: 'center' }
+				, { field: 'name', width: 110, title: '退職社員名', align: 'center','style':'color:#FF5722'}
+				, { field: 'department', width: 120, title: '所属部門', align: 'center'}
+				, { field: 'position', width: 100, title: '役職', align: 'center'}
+				, { field: 'lead_admin', width: 90, title: '部門長', align: 'center'}
+				, { field: 'connect_names', width: 180, title: '引継ぎ担当者', align: 'center'}
+				, { field: 'quit_time', width: 100,title: '退職日', align: 'center'}
+				, { field: 'remark', title: '退職理由'}
+				, {
+					width: 100, title: '操作',fixed:'right', align: 'center'
+					, templet: function (d) {
+						var html='<div class="layui-btn-group">';
+							html+='<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">編集</button>';
+							html+='<button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">削除</button>';
+						html+='</div>';
+						return html;
+					}
+				}
+			]]
+		});
+
+		//监听行工具事件
+		table.on('tool(test)', function(obj){
+			var data = obj.data;
+			if(obj.event === 'edit'){
+				tool.side('/user/personal/leave_add?id='+data.id);
+				return;
+			}
+			if (obj.event === 'del') {
+				layer.confirm('削除してもよろしいですか？?', { icon: 3, title: 'ヒント' }, function (index) {
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							obj.del();
+						}
+					}
+					tool.delete("/user/personal/leave_delete", { id: data.id }, callback);
+					layer.close(index);
+				});
+			}
+		});
+		
+		//表头工具栏事件
+		table.on('toolbar(test)', function(obj){
+			var checkStatus = table.checkStatus(obj.config.id); //获取选中行状态
+			var data = checkStatus.data; 
+			if (obj.event === 'add') {
+				tool.side("/user/personal/leave_add");
+				return;
+			}
+		});
+
+		//监听搜索提交
+		form.on('submit(webform)', function(data){
+			if(data.field.keywords) {
+				layui.pageTable.reload({where:{keywords:data.field.keywords},page:{curr:1}});			  
+			}
+			else{
+				location.reload();
+			}
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,106 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">営業活動記録編集</h3>
+    <table class="layui-table layui-table-form">
+      <tr>
+        <td class="layui-td-gray">顧客名</td>
+        <td colspan="5">{$detail.customer}</td>
+      </tr>
+      <tr>
+        <td class="layui-td-gray">連絡先<font>*</font></td>
+        <td>
+          <select name="contact_id" lay-verify="required" lay-reqText="連絡先を選択してください">
+            <option value="">選択してください</option>
+            {volist name=":customer_contact($detail.cid)" id="v"}
+            <option value="{$v.id}" {eq name="$v.id" value="$detail.contact_id"} selected{/eq}>{$v.name}</option>
+            {/volist}
+          </select>
+        </td>
+	    <td class="layui-td-gray">打ち合わせ方法<font>*</font></td>
+        <td>
+          <select name="type" lay-verify="required" lay-reqText="打ち合わせ方法を選択してください">
+            <option value="">選択してください</option>
+            {volist name=":trace_type()" id="v"}
+			<option value="{$key}" {eq name="$key" value="$detail.type"} selected{/eq}>{$v}</option>
+            {/volist}
+          </select>
+        </td>
+        <td class="layui-td-gray">打ち合わせ時間<font>*</font></td>
+        <td>
+          <input type="text" id="follow_time" name="follow_time" value="{$detail.follow_time}" autocomplete="off" lay-verify="required" lay-reqText="打ち合わせ時間を選択してください" placeholder="打ち合わせ時間を選択してください" class="layui-input">
+        </td>
+      </tr>
+	  <tr>
+		<td class="layui-td-gray" style="vertical-align:top">営業活動情報内容<font>*</font></td>
+        <td colspan="5">
+          <textarea name="content" placeholder="営業活動情報内容を入力してください" lay-verify="required" lay-reqText="営業活動情報内容を入力してください" class="layui-textarea">{$detail.content}</textarea>
+        </td>
+      </tr>
+      <tr>
+        <td class="layui-td-gray">現段階<font>*</font></td>
+        <td>
+          <select name="stage" lay-verify="required" lay-reqText="選択してください">
+            <option value="">選択してください</option>
+            {volist name=":trace_stage()" id="v"}
+			<option value="{$key}" {eq name="$key" value="$detail.stage"} selected{/eq}>{$v}</option>
+            {/volist}
+          </select>
+        </td>
+	    <td class="layui-td-gray">営業機会</td>
+        <td>
+          <select name="chance_id">
+            <option value="">選択してください</option>
+            {volist name=":customer_chance($detail.cid)" id="v"}
+			<option value="{$v.id}" {eq name="$v.id" value="$detail.chance_id"} selected{/eq}>{$v.title}</option>
+            {/volist}
+          </select>
+        </td>
+        <td class="layui-td-gray-2">次回打ち合わせ時間<font>*</font></td>
+        <td>
+          <input type="text" id="next_time" name="next_time" value="{$detail.next_time}" autocomplete="off" lay-verify="required" lay-reqText="次回打ち合わせ時間を選択してください" placeholder="次回打ち合わせ時間を選択してください" class="layui-input">
+        </td>
+      </tr>
+    </table>
+    <div class="py-3">
+	  <input type="hidden" name="id" value="{$detail.id}">
+      <button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">確定</button>
+      <button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+    </div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool,laydate = layui.laydate;
+		laydate.render({
+			elem: '#follow_time'
+			,type: 'datetime'
+		});
+		laydate.render({
+			elem: '#next_time'
+			,min: 0
+			,type: 'datetime'
+		});
+		//监听提交
+		form.on('submit(webform)', function (data) {
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose();
+					parent.layui.traceTable.reload();
+				}
+			}
+			tool.post("/customer/api/add_trace", data.field, callback);
+			return false;
+		});
+
+	}
+</script>
+{/block}
+<!-- /脚本 -->

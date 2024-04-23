@@ -1,0 +1,152 @@
+{extend name="../../base/view/common/base" /}
+
+<!-- 主体 -->
+{block name="body"}
+
+<div class="p-3">
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+  	<button class="layui-btn layui-btn-sm addNew" type="button">+ 車両タイプ追加</button>
+  </div>
+</script>
+{/block}
+<!-- /主体 -->
+<!-- スクリプト -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool, form = layui.form;
+		layui.pageTable = table.render({
+			elem: '#test'
+			, toolbar: '#toolbarDemo'
+			, defaultToolbar: false
+			, title: '車両タイプリスト'
+			, url: "/adm/car/car_cate"
+			, page: false
+			, cellMinWidth: 80
+			, cols: [[
+				{ field: 'id', width: 80, title: 'ID', align: 'center' }
+				, { field: 'title', title: '車両名' }
+				, { field: 'name', title: 'ナンバープレート' }
+				, {
+					field: 'status', title: 'ステータス', width: 100, align: 'center', templet: function (d) {
+						var html1 = '<span class="green">正常</span>';
+						var html2 = '<span class="yellow">無効</span>';
+						if (d.status == 1) {
+							return html1;
+						}
+						else {
+							return html2;
+						}
+					}
+				}
+				, {
+					width: 100, title: '操作', align: 'center', templet: function (d) {
+						var html = '';
+						var btn = '<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">編集</a>';
+						var btn1 = '<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="disable">無効</a>';
+						var btn2 = '<a class="layui-btn layui-btn-xs" lay-event="open">有効</a>';
+						if (d.status == 1) {
+							html = '<div class="layui-btn-group">' + btn + btn1 + '</div>';
+						}
+						else {
+							html = '<div class="layui-btn-group">' + btn + btn2 + '</div>';
+						}
+						return html;
+					}
+				}
+			]]
+		});
+
+		table.on('tool(test)',function (obj) {
+			if(obj.event === 'edit'){					
+				addExpense(obj.data.id,obj.data.title,obj.data.name);
+			}
+			if(obj.event === 'disable'){
+				layer.confirm('この車両を無効しますか？', {icon: 3, title:'確認'}, function(index){
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							layui.pageTable.reload();
+						}
+					}
+					tool.post("/adm/car/car_cate_check", { id: obj.data.id,status: 0}, callback);
+					layer.close(index);
+				});
+			}
+			if(obj.event === 'open'){
+				layer.confirm('この車両を有効にしますか？', {icon: 3, title:'確認'}, function(index){
+					let callback = function (e) {
+						layer.msg(emsg);
+						if (e.code == 0) {
+							layui.pageTable.reload();
+						}
+					}
+					tool.post("/adm/car/car_cate_check", { id: obj.data.id,status: 1}, callback);
+					layer.close(index);
+				});
+			}
+		});
+		
+		$('body').on('click','.addNew',function(){
+			addExpense(0,'','');	
+		});
+		
+		function addExpense(id,title,name){
+			var biaoti = '新規車両';
+			if(id>0){
+				biaoti = '車両編集';
+			}			
+			
+			layer.open({
+				type: 1
+				,title: biaoti
+				,area: '368px;'
+				,id: 'LAY_module' //重複防止のためにIDを設定します
+				,btn: ['確定', 'キャンセル']
+				,btnAlign: 'c'
+				,content: '<div style="padding-top:15px;">\
+							<div class="layui-form-item">\
+							  <label class="layui-form-label">車両名</label>\
+							  <div class="layui-input-inline">\
+								<input type="hidden" name="id" value="'+id+'">\
+								<input type="text" name="title" autocomplete="off" value="'+title+'" placeholder="車両名を入力してください" class="layui-input">\
+							  </div>\
+							</div>\
+							<div class="layui-form-item">\
+							  <label class="layui-form-label">ナンバープレート</label>\
+							  <div class="layui-input-inline">\
+								<input type="text" name="name" autocomplete="off" value="'+name+'" placeholder="ナンバープレートを入力してください" class="layui-input">\
+							  </div>\
+							</div>\
+						  </div>'
+				,yes: function(index){
+					let id = $('#LAY_module').find('[name="id"]').val();
+					let title = $('#LAY_module').find('[name="title"]').val();
+					let name = $('#LAY_module').find('[name="name"]').val();
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							layui.pageTable.reload();	
+							layer.close(index);			
+						}
+					}
+					tool.post("/adm/car/car_cate_add", {
+						id: id,
+						title: title,
+						name: name
+					}, callback);						
+				}
+				,btn2: function(){
+					layer.closeAll();
+				}
+			});
+		}
+	}
+</script>
+
+{/block}
+<!-- /スクリプト -->

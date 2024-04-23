@@ -1,0 +1,52 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">営業活動</h3>
+    <table class="layui-table layui-table-form">
+      <tr>
+        <td class="layui-td-gray">顧客社名</td>
+        <td colspan="3">{$detail.customer}</td>
+		<td class="layui-td-gray-2">連絡先</td>
+        <td>
+            {volist name=":customer_contact($detail.cid)" id="v"}
+            {eq name="$v.id" value="$detail.contact_id"}{$v.name}{/eq}
+            {/volist}
+        </td>
+      </tr>
+      <tr>
+	    <td class="layui-td-gray">案件タイトル</td>
+        <td colspan="3">{$detail.title}</td>
+        <td class="layui-td-gray">発生日時</td>
+        <td>{$detail.discovery_time}</td>
+      </tr>
+	  <tr>
+	    <td class="layui-td-gray">営業段階</td>
+        <td>{$detail.stage_name}</td>
+		<td class="layui-td-gray">予定金額</td>
+        <td>{$detail.expected_amount}</td>
+        <td class="layui-td-gray-2">予定契約時間</td>
+        <td>{$detail.expected_time}</td>
+      </tr>
+	  <tr>
+		<td class="layui-td-gray" style="vertical-align:top">案件詳細</td>
+        <td colspan="5">{$detail.content}</td>
+      </tr>
+      <tr>        
+        <td class="layui-td-gray">担当者</td>
+        <td>{$detail.belong_name}</td>
+		<td class="layui-td-gray">確認者</td>
+        <td colspan="3">{$detail.assist_names}</td>
+      </tr>
+    </table>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+
+</script>
+{/block}
+<!-- /脚本 -->

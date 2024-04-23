@@ -1,0 +1,154 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<form class="layui-form gg-form-bar border-x border-t">
+		<div class="layui-input-inline">
+			<select name="cate_id">
+				<option value="">分類を選択してください</option>
+				{volist name=":set_recursion(article_cate())" id="v"}
+				<option value="{$v.id}">{$v.title}</option>
+				{/volist}
+			</select>
+		</div>
+		<div class="layui-input-inline" style="width:300px;">
+			<input type="text" name="keywords" placeholder="タイトル/分類/説明/内容" class="layui-input" autocomplete="off" />
+		</div>
+		<div class="layui-input-inline" style="width:180px;">
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+			<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+		</div>
+	</form>
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+
+<script type="text/html" id="status">
+	<i class="layui-icon {{#  if(d.status == 1){ }}layui-icon-ok{{#  } else { }}layui-icon-close{{#  } }}"></i>
+</script>
+<script type="text/html" id="is_share">
+	<i class="layui-icon {{#  if(d.is_share == 0){ }}layui-icon-close{{#  } else { }}layui-icon-ok{{#  } }}"></i>
+</script>
+<script type="text/html" id="toolbarDemo">
+<div class="layui-btn-container">
+   <span class="layui-btn layui-btn-normal layui-btn-sm" title="添加文章" lay-event="add">+ 追加</span>
+</div>
+</script>
+<script type="text/html" id="barDemo">
+<div class="layui-btn-group"><span class="layui-btn layui-btn-xs" lay-event="edit">編集</span><span class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">消除</span></div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool ,form = layui.form;
+		layui.pageTable = table.render({
+			elem: '#test',
+			title: 'ドキュメント リスト',
+			toolbar: '#toolbarDemo',
+			defaultToolbar: false,
+			url: "/article/index/list", //数据接口
+			cellMinWidth: 80,
+			page: true, //开启分页
+			limit: 20,
+			cols: [
+				[ //表头
+					{
+						field: 'id',
+						title: '番号',
+						align: 'center',
+						hide: true ,
+						width: 80
+					}, {
+						field: 'sort',
+						title: '順番',
+						align: 'center',
+						hide: true ,
+						width: 66
+					}, {
+						field: 'cate_title',
+						title: '分類',
+						align: 'left',
+					}, {
+						field: 'title',
+						title: 'タイトル',
+						templet: '<div><a data-href="/article/index/view/id/{{d.id}}.html" class="side-a">{{d.title}}</a></div>'
+					},{
+						field: 'read',
+						title: '閲覧数',
+						align: 'center',
+						width: 80
+					}, {
+						field: 'status',
+						title: 'ステータス',
+						toolbar: '#status',
+						align: 'center',
+						width: 100
+					}, {
+						field: 'is_home',
+						title: '共有',
+						toolbar: '#is_share',
+						align: 'center',
+						width: 120
+					}, {
+						field: 'right',
+						title: '操作',
+						toolbar: '#barDemo',
+						width: 100,
+						align: 'center'
+					}
+				]
+			]
+		});
+		
+		//表头工具栏事件
+		table.on('toolbar(test)', function(obj){
+			if (obj.event === 'add') {
+				tool.side("/article/index/add");
+				return;
+			}
+		});
+		//监听行工具事件
+		table.on('tool(test)', function(obj) {
+			var data = obj.data;
+			if(obj.event === 'edit'){
+				tool.side('/article/index/add?id='+data.id);
+				return;
+			}
+			if (obj.event === 'del') {
+				layer.confirm('消除ですか?', {
+					icon: 3,
+					title: 'ヒント'
+				}, function(index) {
+					let callback = function (res) {
+						layer.msg(res.msg);
+						if (res.code == 0) {
+							obj.del();
+						}
+					}
+					tool.delete("/article/index/delete", {id: data.id}, callback);
+					layer.close(index);
+				});
+			}
+		});
+
+		//监听搜索提交
+		form.on('submit(webform)', function(data) {
+			layui.pageTable.reload({
+				where: {
+					keywords: data.field.keywords,
+					cate_id: data.field.cate_id
+				},
+				page: {
+					curr: 1
+				}
+			});
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,191 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+{include file="/approve/add_style" /}
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<!-- 開発 #5　xie -->
+	<h3 class="pb-3">休暇申請</h3>
+	{eq name="$id" value="0"}
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-2">休暇種類<font>*</font></td>
+			<td colspan="3">
+				<select name="detail_type" lay-verify="required" lay-reqText="休暇種類を選択してください">
+				  <option value="">--選択してください--</option>
+				  <option value="1">休暇</option>
+				  <option value="2">有給休暇</option>
+				  <option value="3">代休</option>
+				  <option value="4">病気休暇</option>
+				  <option value="5">結婚休暇</option>
+				  <option value="6">喪中休暇</option>
+				  <option value="7">出産休暇</option>
+				  <option value="8">育児休暇</option>
+				  <option value="9">その他</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">開始時間<font>*</font></td>
+			<td>
+				<input id="start_time" name="start_time" autocomplete="off" class="layui-input select-time" value="" readonly lay-verify="required" placeholder="時間を選択してください" lay-reqText="時間を選択してください">
+			</td>
+			<td class="layui-td-gray">終了時間<font>*</font></td>
+			<td>
+				<input id="end_time" name="end_time" autocomplete="off" class="layui-input select-time" value="" readonly lay-verify="required" placeholder="時間を選択してください" lay-reqText="時間を選択してください">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">有休残(日)</td>
+			<td><input name="annual_leave"   id="annual_leave" value="{$detail.annual_leave}" class="layui-input" readonly lay-verify="required|number" ></td>
+			<td class="layui-td-gray">有休利用日数<font>*</font></td>
+			<td >
+				<select name="duration" id="duration" lay-verify="required" lay-filter="selctOnchange" >
+					<option value="">--選択してください--</option>
+					<option value="0.5">0.5日</option>
+					<option value="1">1日</option>
+					<option value="1.5">1.5日</option>
+					<option value="2">2日</option>
+					<option value="2.5">2.5日</option>
+					<option value="3">3日</option>
+					<option value="3.5">3.5日</option>
+					<option value="4">4日</option>
+					<option value="4.5">4.5日</option>
+					<option value="5">5日</option>
+				  </select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">休暇理由<font>*</font></td>
+			<td colspan="3">
+				<textarea name="content" placeholder="休暇理由を入力してください" class="layui-textarea" lay-verify="required" lay-reqText="休暇理由を入力してください"></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray"><div class="layui-input-inline">添付</div> <div class="layui-input-inline"><button type="button" class="layui-btn layui-btn-xs" id="upFile"><i class="layui-icon"></i></button></div></td>
+			<td colspan="3" style="line-height:inherit">
+				<div class="layui-row" id="fileList">
+					<input data-type="file" type="hidden" name="file_ids" value="">
+				</div>
+			</td>
+		</tr>
+	</table>
+	{else/}
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">休暇種類<font>*</font></td>
+			<td colspan="3">
+				<select name="detail_type" lay-verify="required" lay-reqText="休暇種類を選択してください">
+				  <option value="">--選択してください--</option>
+				  <option value="1" {eq name="$detail.detail_type" value="1"}selected=""{/eq}>休暇</option>
+				  <option value="2" {eq name="$detail.detail_type" value="2"}selected=""{/eq}>有給休暇</option>
+				  <option value="3" {eq name="$detail.detail_type" value="3"}selected=""{/eq}>代休</option>
+				  <option value="4" {eq name="$detail.detail_type" value="4"}selected=""{/eq}>病気休暇</option>
+				  <option value="5" {eq name="$detail.detail_type" value="5"}selected=""{/eq}>結婚休暇</option>
+				  <option value="6" {eq name="$detail.detail_type" value="6"}selected=""{/eq}>喪中休暇</option>
+				  <option value="7" {eq name="$detail.detail_type" value="7"}selected=""{/eq}>出産休暇</option>
+				  <option value="8" {eq name="$detail.detail_type" value="8"}selected=""{/eq}>育児休暇</option>
+				  <option value="9" {eq name="$detail.detail_type" value="9"}selected=""{/eq}>その他</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">開始時間<font>*</font></td>
+			<td>
+				<input id="start_time" name="start_time" autocomplete="off" class="layui-input select-time" value="{$detail.start_time|date='Y-m-d'}" readonly lay-verify="required" placeholder="時間を選択してください" lay-reqText="時間を選択してください">
+			</td>
+			<td class="layui-td-gray">終了時間<font>*</font></td>
+			<td>
+				<input id="end_time" name="end_time" autocomplete="off" class="layui-input select-time" value="{$detail.end_time|date='Y-m-d'}" readonly lay-verify="required" placeholder="時間を選択してください" lay-reqText="時間を選択してください">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">有休残(日)</td>
+			<td><input name="annual_leave"  id="annual_leave" value="{$detail.annual_leave}" class="layui-input" readonly lay-verify="required|number" ></td>
+			<td class="layui-td-gray">有休利用日数<font>*</font></td>
+			<td >
+				<select name="duration" id="duration"  lay-verify="required"  lay-filter="selctOnchange" >
+					<option value="">--選択してください--</option>
+					<option value="0.5"{eq name="$detail.duration" value="0.5"}selected=""{/eq}>0.5日</option>
+					<option value="1"{eq name="$detail.duration" value="1"}selected=""{/eq}>1日</option>
+					<option value="1.5"{eq name="$detail.duration" value="1.5"}selected=""{/eq}>1.5日</option>
+					<option value="2"{eq name="$detail.duration" value="2"}selected=""{/eq}>2日</option>
+					<option value="2.5"{eq name="$detail.duration" value="2.5"}selected=""{/eq}>2.5日</option>
+					<option value="3"{eq name="$detail.duration" value="3"}selected=""{/eq}>3日</option>
+					<option value="3.5"{eq name="$detail.duration" value="3.5"}selected=""{/eq}>3.5日</option>
+					<option value="4"{eq name="$detail.duration" value="4"}selected=""{/eq}>4日</option>
+					<option value="4.5"{eq name="$detail.duration" value="4.5"}selected=""{/eq}>4.5日</option>
+					<option value="5"{eq name="$detail.duration" value="5"}selected=""{/eq}>5日</option>
+				  </select>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">休暇理由<font>*</font></td>
+			<td colspan="3">
+				<textarea name="content" placeholder="休暇理由を入力してください" class="layui-textarea" lay-verify="required" lay-reqText="休暇理由を入力してください">{$detail.content}</textarea>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray"><div class="layui-input-inline">添付</div> <div class="layui-input-inline"><button type="button" class="layui-btn layui-btn-xs" id="upFile"><i class="layui-icon"></i></button></div></td>
+			<td colspan="3" style="line-height:inherit">
+				<div class="layui-row" id="fileList">
+					<input data-type="file" type="hidden" name="file_ids" value="{$detail.file_ids}">
+					{notempty name="$detail.file_ids"}
+					{volist name="$detail.fileArray" id="vo"}
+					<div class="layui-col-md4" id="uploadImg{$vo.id}">{:file_card($vo)}</div>
+					{/volist}
+					{/notempty}
+				</div>
+			</td>
+		</tr>
+	</table>
+	{/eq}
+	{include file="/approve/add_flow" /}
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+const moduleInit = ['tool','employeepicker','oaTool'];
+	function gouguInit() {
+		var form = layui.form,
+			tool=layui.tool,
+			oaTool=layui.oaTool,
+			laydate = layui.laydate;
+			
+		oaTool.addFile({
+			btn: 'upFile',
+			box: 'fileList'
+		});
+	
+		if (typeof (flowStep) == "function") {
+			flowStep();
+		}	
+		//日期时间范围
+		lay('.select-time').each(function () {
+			laydate.render({
+				elem: this,
+				format : 'yyyy-MM-dd',
+				trigger: 'click',
+				fullPanel:true,
+			});
+		});
+		
+		form.on('select(selctOnchange)', function (data) {
+			var annual_leave = $("#annual_leave").val();
+			console.log(data);
+			if(parseFloat(data.value)>parseFloat($("#annual_leave").val())){
+				layer.msg("有休利用日数>有休残(日)");
+				$("#duration").val("");
+				layui.form.render('select');
+			}
+			
+
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

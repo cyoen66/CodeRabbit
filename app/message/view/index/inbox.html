@@ -1,0 +1,188 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	{include file="index/msgmenu" /}
+	<div style="margin-left:172px;">
+		<form class="layui-form gg-form-bar border-t border-x">
+			<div class="layui-input-inline" style="width:240px">
+				<input type="text" name="keywords" placeholder="キーワード" class="layui-input" autocomplete="off"/>
+			</div>
+			<div class="layui-input-inline" id="date">
+				<div class="layui-input-inline" style="width:112px; margin-bottom:0;">
+				  <input type="text" autocomplete="off" id="start_time" name="start_time" class="layui-input" placeholder="受信開始日">
+				</div>
+				~
+				<div class="layui-input-inline" style="width:112px; margin-bottom:0">
+				  <input type="text" autocomplete="off" id="end_time" name="end_time" class="layui-input" placeholder="受信終了日">
+				</div>
+			</div>
+			<div class="layui-input-inline" style="width:136px">
+				<select name="read">
+					<option value="">メッセージの状態を選択</option>
+					<option value="1">未読メッセージ</option>
+					<option value="2">既読メッセージ</option>
+				</select>
+			</div>
+			<div class="layui-input-inline" style="width:136px">
+				<select name="template">
+					<option value="">メッセージ類型を選択</option>
+					<option value="1">システムメッセージ</option>
+					<option value="2">個人メッセージ</option>
+				</select>
+			</div>
+			<div class="layui-input-inline" style="width:180px;">
+				<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+				<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+			</div>
+		</form> 
+		<table class="layui-hide" id="test" lay-filter="test"></table>
+	</div>
+</div>
+
+<script type="text/html" id="toolbarDemo">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add"><i class="layui-icon">&#xe61f;</i>新規メッセージ</button>
+		<button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="read"><i class="layui-icon">&#xe605;</i>既読設定</button>
+		<button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del"><i class="layui-icon">&#xe640;</i>一括削除</button>
+	</div>
+</script>
+
+<script type="text/html" id="barDemo">
+<div class="layui-btn-group"><button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="view">閲覧</button>
+  {{#  if(d.template == 0){ }}
+  <button class="layui-btn layui-btn-xs" lay-event="reply">返信</button>
+  <button class="layui-btn layui-btn-xs layui-btn-warm" lay-event="resend">転送</button>
+  {{#  } }}
+  <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">削除</button></div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool ,form = layui.form,laydate = layui.laydate;		
+		//日付範囲
+		laydate.render({
+			elem: '#date',
+			range: ['#start_time', '#end_time'],
+			rangeLinked:true
+		});
+		layui.pageTable = table.render({
+			elem: '#test',
+			toolbar: '#toolbarDemo',
+			title:'受信箱',
+			url: "/message/index/inbox", //データインターフェース
+			page: true ,//ページネーションを有効化
+			limit: 20,
+			cellMinWidth: 80, //グローバルな通常セルの最小幅、layui 2.2.1 新機能
+			cols: [[ //表のヘッダー
+			  {type:'checkbox',fixed:'left'},
+			  {field: 'msg_type', title: 'メッセージ類型',width:130,align:'center'},
+			  {field: 'from_name', title: '送信者', width:100,align:'center'},
+			  {field: 'title', title: 'メッセージテーマ'},
+			  {field: 'send_time', title: '送信日時', align:'center',width:160},
+			  {field: 'read_time', title: '既読状態',align:'center', width:90,templet:function(d){
+							var html='<span style="color:#5FB878">既読</span>';
+							if(d.read_time==0){
+								html='<span style="color:#FF5722">未読</span>';
+							}
+							return html;
+						}},
+			  {field: 'right', title: '操作',fixed:'right', toolbar: '#barDemo', width:170, align:'center'}
+			]],
+			where:{type:1}
+		});
+
+		//行のツールイベントを監視
+		table.on('tool(test)', function(obj){
+			var data = obj.data;
+			if(obj.event === 'del'){
+				layer.confirm('このメッセージをゴミ箱に移動しますか？', {icon: 3, title:'ヒント'}, function(index){
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if(e.code==0){
+							layui.pageTable.reload();
+						}
+					}
+					tool.delete("/message/index/check", {
+						ids: data.id,
+						type:2,
+						source:3
+					}, callback);
+					layer.close(index);
+				});
+			}
+			if(obj.event === 'view'){
+				tool.side('/message/index/read?id='+data.id);
+				return;
+			}
+			if(obj.event === 'reply'){
+				tool.side('/message/index/reply?id='+data.id+'&type=1');
+				return;
+			}
+			if(obj.event === 'resend'){
+				tool.side('/message/index/reply?id='+data.id+'&type=2');
+				return;
+			}
+		});
+		
+		//ヘッダーツールバーイベントを監視
+		table.on('toolbar(test)', function(obj){
+			var checkStatus = table.checkStatus(obj.config.id); //選択行の状態を取得
+			var data = checkStatus.data; 
+			if (obj.event === 'add') {
+				tool.side("/message/index/add");
+				return;
+			}
+			if(data.length==0){
+				layer.msg('操作するメッセージを選択してください');
+				return false;
+			}
+			var idArray=[],msg='この操作を実行しますか？',type=0;
+			for(var i=0;i<data.length;i++){
+				idArray.push(data[i].id);
+			}
+			switch(obj.event){
+				case 'read':
+					msg = '選択したメッセージを既読に設定しますか？';
+					type = 1;
+				break;
+				case 'del':
+					msg = '選択したメッセージをゴミ箱に移動しますか？';
+					type = 2;
+				break;
+			};
+			
+			layer.confirm(msg, {
+				icon: 3,
+				title: 'ヒント'
+			}, function (index) {
+				let callback = function (e) {
+					layer.msg(e.msg);
+					if(e.code==0){
+						layui.pageTable.reload();
+					}
+				}
+				tool.delete("/message/index/check", {
+					ids: idArray.join(','),
+					type:type,
+					source:3
+				}, callback);
+				layer.close(index);
+			});
+		});
+		 
+		//検索のサブミットを監視
+		form.on('submit(webform)', function(data){
+			let f=data.field;
+			layui.pageTable.reload({where:{keywords:f.keywords,start_time:f.start_time,end_time:f.end_time,template:f.template,read:f.read},page:{curr:1}});
+			return false;
+		});
+	}		
+</script>
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,139 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+{include file="/approve/add_style" /}
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<!-- 開発 #5　xie -->
+	<h3 class="pb-3">経費（事前）申請</h3>
+	{eq name="$id" value="0"}
+	<table class="layui-table layui-table-form">
+		<tr>
+			<!-- 開発 #6　xie -->
+			<td class="layui-td-gray-2">申請金額<font>*</font></td>
+			<td><input type="text" name="amount" value="" autocomplete="off" placeholder="申請金額を入力してください" lay-verify="required|number" lay-reqText="申請金額を入力してください" class="layui-input"></td>
+			<td class="layui-td-gray">経費種類<font>*</font></td>
+			<td>
+				<select name="detail_type" lay-verify="required" lay-reqText="選択してください">
+				  <option value="">--選択してください--</option>
+				  {volist name=":oa_cost_cate()" id="vo"}
+					<option value="{$vo.id}">{$vo.title}</option>
+				  {/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray">申請日付<font>*</font></td>
+			<td>
+				<input id="detail_time" name="detail_time" autocomplete="off" readonly class="layui-input" value="" readonly lay-verify="required" placeholder="時間を選択してください" lay-reqText="時間を選択してください">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">申請者<font>*</font></td>
+			<td><input type="text" name="name" value="" autocomplete="off" placeholder="申請者を入力してください" lay-verify="required" lay-reqText="申請者を入力してください" class="layui-input"></td>
+			<td class="layui-td-gray">口座番号<font>*</font></td>
+			<td><input type="text" name="bank" value="" autocomplete="off" placeholder="口座番号を入力してください" lay-verify="required|number" lay-reqText="口座番号を入力してください" class="layui-input"></td>
+			<td class="layui-td-gray">銀行<font>*</font></td>
+			<td>
+				<input name="address" autocomplete="off" class="layui-input" value="" lay-verify="required" placeholder="銀行を入力してください" lay-reqText="銀行を入力してください">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">支店番号<font>*</font></td>
+			<td colspan="2">
+				<input type="text" name="branch_number" value="" autocomplete="off" placeholder="支店番号を入力してください" lay-verify="required" lay-reqText="支店番号を入力してください" class="layui-input">		
+			</td>	
+			<td colspan="3">
+				<input type="text" name="branch_name" value="" autocomplete="off" readonly="readonly" class="layui-input">			
+			</td>			
+		</tr>
+		<tr>
+			<td class="layui-td-gray">申請理由<font>*</font></td>
+			<td colspan="5">
+				<textarea name="content" placeholder="申請理由を入力してください" class="layui-textarea" lay-verify="required" lay-reqText="申請理由を入力してください"></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">備考</td>
+			<td colspan="5">
+				<textarea name="remark" placeholder="備考を入力してください" class="layui-textarea"></textarea>
+			</td>
+		</tr>
+	</table>
+	{else/}
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray-2">申請金額<font>*</font></td>
+			<td><input type="text" name="amount" value="{$detail.amount}" autocomplete="off" placeholder="申請金額を入力してください" lay-verify="required|number" lay-reqText="申請金額を入力してください" class="layui-input"></td>
+			<td class="layui-td-gray">経費種類<font>*</font></td>
+			<td>
+				<select name="detail_type" lay-verify="required" lay-reqText="選択してください">
+				  <option value="">--選択してください--</option>
+				  {volist name=":oa_cost_cate()" id="vo"}
+					<option value="{$vo.id}" {eq name="$detail.detail_type" value="$vo.id"}selected=""{/eq}>{$vo.title}</option>
+				  {/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray">申請日付<font>*</font></td>
+			<td>
+				<input id="detail_time" name="detail_time" autocomplete="off" class="layui-input" value="{$detail.detail_time}" readonly lay-verify="required" placeholder="時間を選択してください" lay-reqText="時間を選択してください">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">申請者<font>*</font></td>
+			<td><input type="text" name="name" value="{$detail.name}" autocomplete="off" placeholder="申請者を入力してください" lay-verify="required" lay-reqText="申請者を入力してください" class="layui-input"></td>
+			<td class="layui-td-gray">口座番号<font>*</font></td>
+			<td><input type="text" name="bank" value="{$detail.bank}" autocomplete="off" placeholder="口座番号を入力してください" lay-verify="required|number" lay-reqText="口座番号を入力してください" class="layui-input"></td>
+			<td class="layui-td-gray">銀行<font>*</font></td>
+			<td>
+				<input name="address" autocomplete="off" class="layui-input" value="{$detail.address}" lay-verify="required" placeholder="銀行を入力してください" lay-reqText="銀行を入力してください">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">支店番号<font>*</font></td>
+			<td colspan="2">
+				<input type="text" name="branch_number" value="{$detail.branch_number}" autocomplete="off" placeholder="支店番号を入力してください" lay-verify="required" lay-reqText="支店番号を入力してください" class="layui-input">			
+			</td>
+			<td colspan="3">
+				<input type="text" name="branch_name" value="{$detail.branch_name}" readonly="readonly" autocomplete="off" class="layui-input">				
+			</td>			
+		</tr>
+		<tr>
+			<td class="layui-td-gray">申請理由<font>*</font></td>
+			<td colspan="5">
+				<textarea name="content" placeholder="申請理由を入力してください" class="layui-textarea" lay-verify="required" lay-reqText="申請理由を入力してください">{$detail.content}</textarea>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">備考</td>
+			<td colspan="5">
+				<textarea name="remark" placeholder="備考を入力してください" class="layui-textarea">{$detail.remark}</textarea>
+			</td>
+		</tr>
+	</table>
+	{/eq}
+	{include file="/approve/add_flow" /}
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+const moduleInit = ['tool','employeepicker'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool, employeepicker = layui.employeepicker,laydate = layui.laydate;	
+		if (typeof (flowStep) == "function") {
+			flowStep();
+		}	
+		//日期时间范围
+		laydate.render({
+			elem: '#detail_time',
+			type: 'date',
+			format: 'yyyy-MM-dd',
+			showBottom: false
+		});
+		
+	}
+</script>
+{/block}
+<!-- /脚本 -->

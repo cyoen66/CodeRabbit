@@ -1,0 +1,278 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+<link rel="stylesheet" href="{__GOUGU__}/gougu/css/layout.css" media="all">
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<div class="layui-layout-body">
+    <div id="GouguApp">
+        <div class="layui-layout gg-layout">
+            <div class="layui-header">
+                <!-- 头部区域 -->
+                <div class="layui-layout-left">
+                    <span class="gg-head-item">
+                        <a href="javascript:;" gg-event="shrink" title="メニュー表示"><i class="layui-icon layui-icon-shrink-right"></i></a>
+                    </span>
+                    <span class="gg-head-item gg-head-cache">
+                        <a href="javascript:;" gg-event="cache" data-href="/api/index/cache_clear" title="キャッシュ削除"><i class="layui-icon layui-icon-fonts-clear"></i></a>
+                    </span>
+                    <!-- <span class="gg-head-item gg-head-home">
+                        <a href="https://www.gougucms.com/home/pages/detail/s/gouguoa.html" target="_blank" title="前台首页"><i class="layui-icon layui-icon-website"></i></a>
+                    </span> -->
+                </div>
+
+                <div class="layui-layout-right">
+                    <span class="gg-head-item gg-head-refresh">
+                        <a href="javascript:;" class="refreshThis" gg-event="refresh" title="リフレッシュ">
+                            <i class="layui-icon layui-icon-refresh"></i>
+                        </a>
+                    </span>
+                    <span class="gg-head-item gg-head-screen" title="全画面表示">
+                        <a href="javascript:;" gg-event="screen" data-screen="full">
+                            <i class="fullScreen layui-icon layui-icon-screen-full"></i>
+                        </a>
+                    </span>
+					<span class="gg-head-item gg-head-set">
+                        <a href="javascript:;" id="theme" title="テーマ変更">
+                            <i class="layui-icon layui-icon-set"></i>
+                        </a>
+                    </span>
+					<span class="gg-head-item gg-head-set">
+                        <a href="/home/login/lock.html" title="画面ロック">
+                            <i class="iconfont icon-suozhu" style="font-size:21px; font-weight:800"></i>
+                        </a>
+                    </span>
+                    <span class="gg-head-item gg-head-message">
+                        <a href="javascript:;" data-href="/message/index/inbox" data-id="0100" data-title="メッセジー" class="side-menu-item" title="メッセジー">
+                            <i class="layui-icon layui-icon-notice"></i>
+                            <!-- 如果有新消息，则显示 -->
+                            <div class="gg-message-num" id="msgNum" style="display: none;"><span>0</span></div>
+                        </a>
+                    </span>
+                    <span class="gg-head-item gg-head-avatar">
+                        <ul class="layui-nav">
+                            <li class="layui-nav-item">
+                                <a href="javascript:;">
+									<img src="{$login_admin.thumb}" onerror="javascript:this.src='{__IMG__}/nonepic360x360.jpg';this.onerror=null;">
+                                    <cite>{$login_admin.nickname}</cite>
+                                </a>
+                                <dl class="layui-nav-child" style="text-align: center; cursor: pointer;">
+                                    <dd><a data-href="/home/index/edit_personal" data-id="0101" data-title="個人情報" class="side-menu-item">個人情報</a></dd>
+                                    <dd><a data-href="/home/index/edit_password" data-id="0102" data-title="パスワード変更" class="side-menu-item">パスワード変更</a></dd>
+                                    <hr>
+                                    <dd gg-event="logout"><a>ログアウト</a></dd>
+                                </dl>
+                            </li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+
+            <!-- 侧边菜单 -->
+            <div class="layui-side layui-side-menu layui-side-{$theme}">
+                <div class="layui-side-scroll no-scroll">
+                    <div class="layui-logo" gg-event="closeAllTabs">
+                       <img src="{__IMG__}/syslogo.png" style="height: 40px;" class="syslogo">
+                        <!-- <img src="{__IMG__}/syslogo_small.png" style="height: 40px;" class="logo"> -->
+                    </div>
+
+					<ul id="menuList" class="layui-nav layui-nav-tree layui-inline" lay-shrink="all">
+						<li class="layui-nav-item menu-li">
+							<a href="javascript:;" class="side-menu-item layui-this" data-href="/home/index/main.html" data-id="0" style="padding-top:0; padding-bottom:0;"><i class="iconfont icon-xueshuguanli"></i>ワークスペース</a>
+						</li>
+					{foreach name="menu" item="a"}
+						<li class="layui-nav-item menu-li">
+							<a href="javascript:;" lay-tips="{$a.title}" lay-direction="2" data-id="{$a.id}" data-title="{$a.title}" data-href="/{$a.src}"><i class="iconfont {$a.icon}"></i> {$a.title}</a>
+							{notempty name="$a.list"}
+								<dl class="layui-nav-child">
+								{foreach name="$a.list" item="b"}
+									<dd>
+									<a href="javascript:;" class="side-menu-item" data-id="{$b.id}" data-title="{$b.title}" data-href="/{$b.src}">{$b.title}</a>
+									{notempty name="$b.list"}
+										<dl class="layui-nav-child">
+										{foreach name="$b.list" item="c"}
+											<dd>
+											<a href="javascript:;" class="side-menu-item" data-id="{$c.id}" data-title="{$c.title}" data-href="/{$c.src}">{$c.title}</a>
+											{notempty name="$c.list"}
+												<dl class="layui-nav-child">
+												{foreach name="$c.list" item="d"}
+													<dd><a href="javascript:;" class="side-menu-item" data-id="{$d.id}" data-title="{$d.title}" data-href="/{$d.src}">{$d.title}</a></dd>
+												{/foreach}
+												</dl>
+											{/notempty}
+											</dd>
+										{/foreach}
+										</dl>
+									{/notempty}
+									</dd>
+								{/foreach}
+								</dl>
+							{/notempty}
+						</li>			
+					{/foreach}
+					</ul>
+                </div>
+            </div>
+
+            <!-- 页面标签 -->
+            <div id="pageTabs" class="page-tabs">
+                <div class="layui-icon gg-tabs-control layui-icon-prev" gg-event="tabRollLeft"></div>
+                <div class="layui-icon gg-tabs-control layui-icon-next" gg-event="tabRollRight"></div>
+                <div class="layui-icon gg-tabs-control layui-icon-down">
+                    <ul class="layui-nav gg-tabs-select">
+                        <li class="layui-nav-item">
+                            <a href="javascript:;"></a>
+                            <dl class="layui-nav-child layui-anim-fadein">
+                                <dd gg-event="closeThisTabs"><a href="javascript:;">閉じる</a></dd>
+                                <dd gg-event="closeOtherTabs"><a href="javascript:;">その他を閉じる</a></dd>
+                                <dd gg-event="closeAllTabs"><a href="javascript:;">全て閉じる</a></dd>
+                            </dl>
+                        </li>
+                    </ul>
+                </div>
+                <div class="layui-tab gg-admin-tab" lay-unauto lay-allowClose="true" lay-filter="gg-admin-tab">
+                    <ul class="layui-tab-title" id="pageTabUl">
+                        <li lay-id="0" lay-attr="view/home/index.html" class="layui-this"><i class="iconfont icon-xueshuguanli"></i></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 主体内容 -->
+            <div class="layui-body" id="GouguAppBody">
+                <div class="gg-tab-page layui-show" id="tabItem0">
+                    <iframe id="0" data-frameid="0" title="yourfuture OA" name="myiframe" src="{:url('/home/index/main')}" frameborder="0" align="left" width="100%" height="100%" scrolling="yes"></iframe>
+                </div>
+            </div>
+            <!-- 辅助元素，用于移动设备下遮罩 -->
+            <div class="gg-body-shade" gg-event="shade"></div>
+        </div>
+    </div>
+</div>
+<!-- /主体 -->
+{/block}
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	var msgStatus=0,isClose=0,msgNum = 0;
+	const moduleInit = ['tool','admin'];
+	function gouguInit() {
+		let admin = layui.admin;
+		let tabs = admin.getCookie('gougutab');
+		if(tabs && tabs!=''){
+			let tab_parse = JSON.parse(tabs);
+			let tab_id = tab_parse.tab_id,tab_array = tab_parse.tab_array;
+			if(tab_array.length>0){
+				for(let a=0; a<tab_array.length;a++){
+					admin.tabTem(tab_array[a].id, tab_array[a].url,tab_array[a].title);
+				}
+				if(tab_id>0){
+					admin.tabChange(tab_id);
+				}
+			}
+		}
+		
+		$('.layui-side-scroll').hover(function(){
+			$(this).removeClass('no-scroll');
+		},function(){
+			$(this).addClass('no-scroll');
+		});
+	
+		$('#GouguApp').on("click",'[gg-event="logout"]',function () {
+			layer.confirm('ログアウトしまか?', { icon: 7, title: '警告' }, function (index) {
+				//注销
+				$.ajax({
+					url: "/home/login/login_out",
+					success: function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							setTimeout(function () {
+								location.href = "{:url('home/login/index')}"
+							}, 1000)
+						}
+					}
+				})
+				layer.close(index);
+			});
+		});
+		layui.dropdown.render({
+			elem: '#theme',
+			trigger: 'mousedown',
+			align: 'center',
+			data: [{
+				title: 'Black',
+				theme: 'black'
+			},{
+				title: 'White',
+				theme: 'white'
+			},{
+				title: 'Blue',
+				theme: 'blue'
+			}],
+			click: function(data, othis){
+				$.ajax({
+					url: "/home/index/set_theme",
+					data:{'theme':data.theme},
+					success: function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							setTimeout(function () {
+								parent.location.reload();
+							}, 1000)
+						}
+					}
+				})
+			}
+		});
+		//轮循获取消息
+		var getStatus = setInterval(function () {
+			$.ajax({
+				url: "/home/index/index",
+				type:'post',
+				success:function(e){
+					if(e.code==0 && e.data!==''){
+						if(e.data.msg_num>0){
+							$('#msgNum').show().find('span').html(e.data.msg_num);
+						}
+						else{
+							$('#msgNum').hide().find('span').html(0);
+						}
+						if(isClose==0&&e.data&&e.data.length){
+							var html = '<ul id="messageul" style="line-height:24px;">';						
+							$.each(e.data, function(key, value) {
+								if(key!='msg_num'){
+									html += '<li style="cursor:pointer;">'+value+'</li>';
+								}							
+							});
+							html +='</ul>'; 
+							if(msgStatus==1){
+								$('#msgBox').html(html);
+							}else{
+								layer.open({
+									type: 1
+									,title:'メッセジー'
+									,offset: 'rb'
+									,area:['240px','168px']
+									,content: '<div id="msgBox" style="padding:10px 15px;">'+html+'</div>'
+									,btnAlign: 'c' //按钮居中
+									,shade: 0 //不显示遮罩
+									,success:function(){
+										msgStatus=1;
+									}
+									,cancel:function(){
+										msgStatus=0;
+										isClose=1;
+									}
+								});
+							}
+						}
+					}else{
+						msgStatus=0;
+						layer.closeAll();
+					}
+				}
+			})
+		}, 10000);
+	}
+</script>
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,362 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">領収証内容</h3>
+	<table class="layui-table">
+		<tr>
+			<td class="layui-td-gray">領収証金額</td>
+			<td>
+				{$detail.amount}
+			</td>
+			<td class="layui-td-gray">領収証類型</td>
+			<td>
+			{eq name="$detail.invoice_type" value="1"}消費税専用領収証{/eq}
+			{eq name="$detail.invoice_type" value="2"}一般領収証{/eq}
+			{eq name="$detail.invoice_type" value="3"}専門領収証{/eq}
+			</td>
+			<td class="layui-td-gray">領収証</td>
+			<td>
+				{volist name=":finance_invoice_subject()" id="vo"}
+				{eq name="$vo.id" value="$detail.invoice_subject"}{$vo.title}{/eq}
+				{/volist}
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">抬头類型</td>
+			<td>
+				{eq name="$detail.type" value="1"}企業{/eq}
+				{eq name="$detail.type" value="2"}個人{/eq}
+			</td>
+			<td class="layui-td-gray">領収証抬头</td>
+			<td>{$detail.invoice_title}</td>
+			<td class="layui-td-gray">電話番号</td>
+			<td>{$detail.invoice_phone}</td>
+		</tr>
+		<tr class="invoice-type" {eq name="$detail.type" value="2"}style="display:none"{/eq}>
+			<td class="layui-td-gray-2">納税者番号</td>
+			<td>{$detail.invoice_tax}</td>
+			<td class="layui-td-gray">口座開設行</td>
+			<td>{$detail.invoice_bank}</td>
+			<td class="layui-td-gray">銀行口座</td>
+			<td>{$detail.invoice_account}</td>
+		</tr>
+		<tr class="invoice-type" {eq name="$detail.type" value="2"}style="display:none"{/eq}>
+			<td class="layui-td-gray-2">銀行営業網点</td>
+			<td>{$detail.invoice_banking}</td>
+			<td class="layui-td-gray">住所</td>
+			<td colspan="3">{$detail.invoice_address}</td>
+		</tr>
+		{notempty name="$detail.remark"}
+		<tr>
+			<td class="layui-td-gray">備考</td>
+			<td colspan="5">{$detail.remark}</td>
+		</tr>
+		{/notempty}
+		<tr>
+			<td class="layui-td-gray">領収証状態</td>
+			<td colspan="5">
+				{if condition="($detail.check_status == 0)"}
+					<span class="black">承認待ち</span>
+				{elseif condition="($detail.check_status == 1)"}
+					<span class="blue">承認中</span>
+				{elseif condition="($detail.check_status == 2)"}
+					<span class="green">承認済み、発行待ち</span>
+				{elseif condition="($detail.check_status == 3)"}
+					<span class="red">未承認</span>
+				{elseif condition="($detail.check_status == 4)"}
+					<span class="red">キャンセル</span>
+				{elseif condition="($detail.check_status == 5)"}
+					<span class="green">発行済み</span>
+				{elseif condition="($detail.check_status == 10)"}
+					<span class="yellow">無効</span>
+				{/if}
+			</td>
+		</tr>
+		{if condition="$detail.open_admin_id > 0"}
+		<tr>
+			<td class="layui-td-gray">発行者</td>
+			<td>{$detail.open_admin}</td>
+			<td class="layui-td-gray">発行日時</td>
+			<td>{$detail.open_time}</td>
+			<td class="layui-td-gray">領収証番号</td>
+			<td>{$detail.code}</td>
+		</tr>
+		{/if}
+		{notempty name="$detail.file_ids"}
+		<tr>
+			<td class="layui-td-gray">関連添付</td>
+			<td colspan="5" style="line-height:inherit">
+				<div class="layui-row">
+					{volist name="$detail.fileArray" id="vo"}
+					<div class="layui-col-md4" id="uploadImg{$vo.id}">{:file_card($vo,'view')}</div>
+					{/volist}
+				</div>
+			</td>
+		</tr>
+		{/notempty}
+		<tr>
+			<td class="layui-td-gray">			
+				<div class="layui-input-inline">他の添付</div>
+				<div class="layui-input-inline">
+					<button type="button" class="layui-btn layui-btn-xs" id="uploadBtn"><i class="layui-icon"></i></button>
+				</div>
+			</td>
+			<td colspan="5" style="line-height:inherit">
+				<div class="layui-row" id="fileBox">
+					<input type="hidden" data-type="file" name="other_file_ids" value="{$detail.other_file_ids}">
+					{notempty name="$detail.other_file_ids"}
+					{volist name="$detail.fileArrayOther" id="vo"}
+					<div class="layui-col-md4" id="uploadImg{$vo.id}">{:file_card($vo)}</div>
+					{/volist}
+					{/notempty}
+				</div>
+			</td>
+		</tr>	
+	</table>
+	
+	<h3 class="py-3">入金内容</h3>
+	<form class="layui-form">
+		<table class="layui-table">
+			<tr>
+				<td class="layui-td-gray">入金状態</td>
+				<td>
+					{if condition="($detail.is_cash == 0)"}
+						<span style="color:#FF5722">未入金</span>
+					{elseif condition="($detail.is_cash == 1)"}
+						<span style="color:#1E9FFF">一部入金</span>
+					{elseif condition="($detail.is_cash == 2)"}
+						<span style="color:#009688">全額入金</span>
+					{/if}
+				</td>
+				<td class="layui-td-gray-2">未入金金額(円)</td>
+				<td style="color:#FF5722">{$detail.not_income}</td>
+				<td class="layui-td-gray-2">入金済金額(円)</td>
+				<td style="color:#1E9FFF">{$detail.enter_amount}</td>
+			</tr>
+			<tr>
+				<td class="layui-td-gray">入金履歴</td>
+				<td colspan="5">
+					<table id="interfix" class="layui-table layui-table-min" style="margin:0">
+						<tr>
+							<th style="width:200px;">入金日</th>
+							<th style="width:200px;">入金金額(円)</th>
+							<th>備考</th>
+							<th style="width:100px;">操作</th>
+						</tr>
+						{empty name="$detail.income"}
+						<tr class="none_interfix">
+							<td colspan="4" style="text-align: center;">入金履歴がありません</td>
+						</tr>
+						{else/}
+						{volist name="$detail.income" id="vo"}
+						<tr class="more_interfix">
+							<td>{$vo.enter_time | date='Y-m-d'}</td>
+							<td>{$vo.amount}</td>
+							<td style="text-align:left;">{$vo.remarks}</td>
+							<td><a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="remove" data-id="{$vo.id}" data-inid="{$id}">削除</a></td>
+						</tr>
+						{/volist}
+						{/empty}
+					</table>
+					{if condition="($detail.is_cash lt 2)"}
+					<div class="pt-2"><button class="layui-btn layui-btn-sm" type="button" id="addInterfix">+ 入金履歴を追加</button></div>
+					{/if}
+				</td>
+			</tr>	
+		</table>
+		<div class="py-3">
+			<input name="inid" id="inid" type="hidden" value="{$id}">
+			<input name="enter_type" id="enter_type" type="hidden" value="1">
+			{if condition="($detail.is_cash lt 2)"}
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">入金履歴を保存</button>
+			<button type="reset" class="layui-btn layui-btn-primary">リセット</button>
+			{/if}
+			{if condition="($detail.is_cash eq 0)"}
+			<span class="layui-btn layui-btn-danger" lay-event="all">全額入金</span>
+			{/if}
+			{if condition="($detail.is_cash eq 1)"}
+			<span class="layui-btn layui-btn-danger" lay-event="all">残り部分全額入金</span>
+			{/if}
+			{if condition="($detail.is_cash gt 0)"}
+			<span class="layui-btn layui-btn-warm" lay-event="refue">全額反入金</span>
+			{/if}
+		</div>	
+	</form>
+	<input type="hidden" name="id" value="{$detail.id}">
+</div>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+const moduleInit = ['tool','oaTool'];
+function gouguInit() {
+	var form = layui.form,tool=layui.tool,laydate = layui.laydate,oaTool = layui.oaTool;
+	oaTool.addFile({
+		isSave:true,
+		uidDelete:true,
+		ajaxSave:function(val){
+			$.ajax({
+				url: "/finance/api/open",
+				type:'post',
+				data:{
+					id:$('[name="id"]').val(),
+					other_file_ids:val
+				},
+				success: function (e) {
+					location.reload();
+				}
+			})
+		},
+		ajaxDelete:function(val){
+			$.ajax({
+				url: "/finance/api/open",
+				type:'post',
+				data:{
+					id:$('[name="id"]').val(),
+					other_file_ids:val
+				},
+				success: function (e) {
+					location.reload();
+				}
+			})
+		}
+	})
+	//添加表格行
+	$('#addInterfix').on('click',function(){
+		var html = '';
+		html += '<tr class="more_interfix">';
+		html += '<td><input type="text" class="layui-input enter-time" name="enter_time[]" readonly lay-verify="required" lay-reqText="入社日を選択してください">';
+		html += '<td><input type="text" class="layui-input" name="amount[]" lay-verify="required|number" lay-reqText="入金金額を入力してください,数字"></td>';
+		html += '<td><input type="text" class="layui-input" name="remarks[]"></td>';
+		html += '<td><a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">消除</a></td>';
+		html += '</tr>';
+		$("#interfix").find('.none_interfix').remove();
+		$("#interfix").append(html);
+		form.render();
+		lay('.enter-time').each(function () {
+			laydate.render({
+				elem: this,
+				trigger: 'click',
+				showBottom:false
+			});
+		});
+	});
+	//删除表格
+	$('#interfix').on('click', '[lay-event="del"]', function() {
+		$(this).parents(".more_interfix").remove();
+		if($("#interfix").find('.more_interfix').length<1){
+			$("#interfix").append('<tr class="none_interfix"><td colspan="4" style="text-align: center;">入金履歴がありません</td></tr>');				
+		}
+	});
+
+	//删除到账记录
+	$('#interfix').on('click', '[lay-event="remove"]', function() {
+		var that=$(this);
+		var id=that.data('id');
+		var inid=that.data('inid');
+		layer.confirm('入金歴史を消除しますか?', {icon: 3, title:'ヒント'}, function(index){
+			$.ajax({
+				url: "/finance/income/delete",
+				type:'post',
+				data:{id:id,inid:inid},
+				success:function(res){
+					layer.msg(res.msg);
+					if(res.code==0){
+						parent.layui.pageTable.reload();
+						window.setTimeout(function(){
+							location.reload();
+						},1200)	
+					}
+				}
+			})
+		})
+	});
+
+	//监听提交
+	form.on('submit(webform)', function(data){
+		console.log(data.field);
+		if($("#interfix").find('.enter-time').length<1){
+			layer.msg('入金歴史を追加してください');
+			return false;
+		}
+		$.ajax({
+			url: "/finance/income/add",
+			type:'post',
+			data:data.field,
+			success:function(res){
+				layer.msg(res.msg);
+				if(res.code==0){
+					parent.layui.pageTable.reload();
+					window.setTimeout(function(){
+						location.reload();
+					},1200)	
+				}
+			}
+		})
+		return false;
+	});
+	
+	$('.layui-form').on('click', '[lay-event="refue"]', function () {
+		var inid=$('#inid').val();
+		layer.confirm('全部逆入金しますか?', {icon: 3, title:'ヒント'}, function(index){
+			$.ajax({
+				url: "/finance/income/add",
+				type:'post',
+				data:{inid:inid,enter_type:3},
+				success:function(res){
+					layer.msg(res.msg);
+					if(res.code==0){
+						parent.layui.pageTable.reload();
+						window.setTimeout(function(){
+							location.reload();
+						},1200)	
+					}
+				}
+			})
+		})
+		return false;
+	})
+	$('.layui-form').on('click', '[lay-event="all"]', function () {
+		var inid=$('#inid').val();
+		layer.confirm('全部入金完了しますか?', {icon: 3, title:'ヒント'}, function(idx){
+			layer.prompt({title: '入金日を選択してください', formType: 3,value :'',success: function(layero, index){
+				$('.layui-layer-input').attr('readonly',true);
+				lay('.layui-layer-input').each(function () {
+					laydate.render({
+						elem: this,
+						trigger: 'click',
+						showBottom:false
+					});
+				});
+				layer.close(idx);
+			}
+		}, function(enter_time, index){
+				if(enter_time ==''){
+					layer.msg('入金日を選択してください');
+					return false;
+				}
+				$.ajax({
+					url: "/finance/income/add",
+					type:'post',
+					data:{inid:inid,enter_type:2,enter_time:enter_time},
+					success:function(res){
+						layer.msg(res.msg);
+						if(res.code==0){
+							parent.layui.pageTable.reload();
+							window.setTimeout(function(){
+								location.reload();
+							},1200)	
+						}
+					}
+				})
+			})
+		})
+		return false;
+	})
+}
+</script>
+{/block}
+<!-- /脚本 -->

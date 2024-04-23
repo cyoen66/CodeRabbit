@@ -1,0 +1,221 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">ドキュメント編集</h3>
+    <table class="layui-table">
+      <tr>
+        <td class="layui-td-gray">タイトル<font>*</font></td>
+        <td colspan="3"><input type="text" name="title" lay-verify="required" lay-reqText="タイトルを入力してください" autocomplete="off" placeholder="タイトルを入力してください"
+            class="layui-input" value="{$article.title}"></td>
+        <td class="layui-td-gray">分類<font>*</font></td>
+        <td>
+          <select name="cate_id" lay-verify="required" lay-reqText="分類を選択してください">
+            <option value="">分類を選択してください</option>
+            {volist name=":set_recursion(article_cate())" id="v"}
+            <option value="{$v.id}" {eq name="$article.cate_id" value="$v.id" }selected{/eq}>{$v.title}</option>
+            {/volist}
+          </select>
+        </td>	
+      </tr>
+      <tr>
+        <td class="layui-td-gray">キーワード<font>*</font></td>
+        <td colspan="3">
+          <input type="text" id="keyword_name" name="keyword_names" autocomplete="off" lay-verify="required" lay-reqText="キーワードを選択してください" placeholder="キーワードを選択してください"
+            class="layui-input" value="{$article.keyword_names}" readonly>
+          <input type="hidden" id="keyword_id" name="keywords_id" autocomplete="off" value="{$article.keyword_ids}">
+        </td>
+		<td class="layui-td-gray">属性</td>
+        <td>
+          <select name="type">
+            <option value="">属性を選択してください</option>
+            <option value="1" {eq name="$article.type" value="1" }selected{/eq}>重要</option>
+            <option value="2" {eq name="$article.type" value="2" }selected{/eq}>人気</option>
+            <option value="3" {eq name="$article.type" value="3" }selected{/eq}>推奨</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="layui-td-gray">共有設定<font>*</font></td>
+        <td>
+			<input type="radio" name="is_share" lay-filter="type" value="0" title="非公開" {eq name="$article.is_share" value="0" }checked{/eq}>
+			<input type="radio" name="is_share" lay-filter="type" value="1" title="全員" {eq name="$article.is_share" value="1" }checked{/eq}>
+			<input type="radio" name="is_share" lay-filter="type" value="2" title="部門" {eq name="$article.is_share" value="2" }checked{/eq}>
+			<input type="radio" name="is_share" lay-filter="type" value="3" title="一部社員" {eq name="$article.is_share" value="3" }checked{/eq}>
+        </td>
+        <td class="layui-td-gray" style="width:50px">状態</td>
+        <td>
+          <input type="radio" name="status" value="1" title="通常" {eq name="$article.status" value="1" }checked{/eq}>
+          <input type="radio" name="status" value="0" title="下げる" {eq name="$article.status" value="0" }checked{/eq}>
+        </td>
+        <td class="layui-td-gray">並べ替え</td>
+        <td>
+          <input type="text" name="sort" placeholder="並べ替えを入力してください，数字" autocomplete="off" class="layui-input" value="{$article.sort}">
+        </td>
+      </tr>
+		<tr id="depament" style="{$article.is_share == 2?'':'display:none'}">
+			<td class="layui-td-gray">共有部門<font>*</font></td>
+			<td colspan="5">
+				<input type="text" name="share_depaments" value="{$article.share_depaments}" placeholder="共有部門を選択してください" readonly class="layui-input picker-depaments">
+				<input type="hidden" name="share_dids" value="{$article.share_dids}">
+			</td>
+		</tr>
+		<tr id="person" style="{$article.is_share == 3?'':'display:none'}">
+			<td class="layui-td-gray">共有人員<font>*</font></td>
+			<td colspan="5">
+				<input type="text" name="share_names" value="{$article.share_names}" placeholder="共有人員を選択してください" readonly class="layui-input picker-more">
+				<input type="hidden" name="share_uids" value="{$article.share_uids}">
+			</td>
+		</tr>
+	  	<tr>
+			<td class="layui-td-gray-2">
+				<div class="layui-input-inline">関連ファイル</div>
+				<div class="layui-input-inline">
+					<button type="button" class="layui-btn layui-btn-xs" id="uploadBtn"><i class="layui-icon"></i></button>
+				</div>
+			</td>
+			<td colspan="5" style="line-height:inherit">
+				<div class="layui-row" id="fileBox">
+					<input type="hidden" data-type="file" name="file_ids" value="{$article.file_ids}">
+					{notempty name="$article.file_ids"}
+					{volist name="$article.fileArray" id="vo"}
+					<div class="layui-col-md4" id="uploadImg{$vo.id}">{:file_card($vo)}</div>
+					{/volist}
+					{/notempty}
+				</div>
+			</td>
+		</tr>
+      <tr>
+        <td class="layui-td-gray" style="vertical-align:top;">概要</td>
+        <td colspan="3">
+          <textarea name="desc" placeholder="概要を入力してください，200文字を超えてはいけません" class="layui-textarea">{$article.desc}</textarea>
+        </td>
+        <td class="layui-td-gray" style="vertical-align:top;">サムネ</td>
+        <td>
+          <div class="layui-upload">
+            <button type="button" class="layui-btn layui-btn-normal layui-btn-sm" id="test1">サムネ(サイズ:640x360)</button>
+            <div class="layui-upload-list" id="demo1" style="width: 120px; height:66px; overflow: hidden;">
+              <img src="{:get_file($article.thumb)}" style="max-width: 100%; height:66px;" />
+              <input type="hidden" name="thumb" value="{$article.thumb}">
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="layui-td-gray" style="vertical-align:top;">内容<font>*</font></td>
+        <td colspan="5">
+          <textarea name="content" placeholder="内容を入力してください" class="layui-textarea" id="container" lay-verify="required" lay-reqText="内容を修正してください"
+            style="border:0;padding:0">{$article.content}</textarea>
+        </td>
+      </tr>
+    </table>
+    <div class="pt-3">
+		<input type="hidden" name="id" value="{$article.id}">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">確定</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+    </div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+const moduleInit = ['tool','employeepicker','oaTool','tagpicker','tinymce'];
+function gouguInit() {
+	var form = layui.form,tool=layui.tool,oaTool = layui.oaTool, tagspicker = layui.tagpicker, upload = layui.upload;
+	
+	//选择共享类型
+	form.on('radio(type)', function (data) {
+		if(data.value==2){
+			$('#person').hide();
+			$('#depament').show();
+		}
+		else if(data.value==3){
+			$('#person').show();
+			$('#depament').hide();
+		}
+		else{
+			$('#person').hide();
+			$('#depament').hide();
+		}
+	});
+	
+    //编辑器初始化
+	var editor = layui.tinymce;
+	var edit = editor.render({
+		selector: "#container",
+		menubar:false,
+		images_upload_url: '/api/index/upload/sourse/tinymce',//图片上传接口
+		height: 500
+	});
+
+	//相关附件上传
+	oaTool.addFile();	
+	
+	//tag选择
+	var tags = new tagspicker({
+		'url': "/api/index/get_keyword_cate",
+		'target': 'keyword_name',
+		'tag_ids': 'keyword_id',
+		'tag_tags': 'keyword_name',
+		'height': 500,
+		'isDiy': 1
+	});
+
+    //封面上传
+    var uploadInst = upload.render({
+		elem: '#test1',
+		url: "/api/index/upload",
+		done: function (res) {
+			layer.msg(res.msg);
+			if (res.code == 0) {
+				//上传成功
+				$('#demo1 input').attr('value', res.data.id);
+				$('#demo1 img').attr('src', res.data.filepath);
+			}
+		}
+    });
+
+    //监听提交
+    form.on('submit(webform)', function (data) {
+		data.field.content = tinyMCE.editors['container'].getContent();
+		if (data.field.content == '') {
+			layer.msg('内容を修正してください');
+			return false;
+		}
+		
+		if(data.field.is_share == 0 || data.field.is_share == 1){
+			data.field.share_dids = '';
+			data.field.share_uids = '';
+		}
+		else if(data.field.is_share == 2){
+			data.field.share_uids = '';
+			if(data.field.share_dids==''){
+				layer.msg('共有する部門を選択してください');
+				return false;
+			}
+		}
+		else if(data.field.is_share == 3){
+			data.field.share_dids = '';
+			if(data.field.share_uids==''){
+				layer.msg('共有する社員を選択してください');
+				return false;
+			}
+		}
+		
+		let callback = function (e) {
+			layer.msg(e.msg);
+			if (e.code == 0) {
+				tool.sideClose(1000);
+			}
+		}
+		tool.post("/article/index/add", data.field, callback);
+		return false;
+    });
+
+  }
+
+</script>
+{/block}
+<!-- /脚本 -->

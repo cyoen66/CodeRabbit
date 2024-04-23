@@ -1,0 +1,172 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">新規顧客</h3>
+    <table class="layui-table layui-table-form">
+      <tr>
+        <td class="layui-td-gray">顧客名<font>*</font></td>
+        <td colspan="3"><input type="text" name="name" lay-verify="required" lay-reqText="顧客名を入力してください" autocomplete="off" placeholder="顧客名を入力してください" class="layui-input"></td>
+		<td class="layui-td-gray">チャンネル<font>*</font></td>
+        <td>
+			<select name="source_id" lay-verify="required" lay-reqText="チャンネルを選択してください">
+            <option value="">チャンネルを選択してください</option>
+            {volist name=":customer_source()" id="v"}
+            <option value="{$v.id}">{$v.title}</option>
+            {/volist}
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="layui-td-gray">連絡先<font>*</font></td>
+        <td>
+          <input type="text" name="address" autocomplete="off" lay-verify="required" lay-reqText="連絡先を入力してください" placeholder="連絡先を入力してください" class="layui-input">
+        </td>
+        <td class="layui-td-gray">所属業界<font>*</font></td>
+        <td>
+          <select name="industry_id" lay-verify="required" lay-reqText="所属業界を選択してください">
+            <option value="">所属業界を選択してください</option>
+            {volist name=":get_industry()" id="v"}
+            <option value="{$v.id}">{$v.title}</option>
+            {/volist}
+          </select>
+        </td>
+	    <td class="layui-td-gray">顧客レベル<font>*</font></td>
+        <td>
+          <select name="grade_id" lay-verify="required" lay-reqText="顧客レベルを選択してください">
+            <option value="">顧客レベルを選択してください</option>
+            {volist name=":customer_grade()" id="v"}
+            <option value="{$v.id}">{$v.title}</option>
+            {/volist}
+          </select>
+        </td>
+      </tr>
+	  {eq name="$sea" value="0"}
+	  <tr>
+        <td class="layui-td-gray">所属社員<font>*</font></td>
+        <td>
+			<div class="layui-input-inline" style="width:50%;">
+				<input type="text" name="belong_name" value="{$userinfo.name}" autocomplete="off" readonly  lay-verify="required" lay-reqText="所属社員を選択してください" placeholder="所属社員を選択してください" class="layui-input">
+			</div>
+			<div class="layui-input-inline gray" style="width:42%;">部門：<span id="department_name">{$userinfo.department}</span></div>
+			<input type="hidden" name="belong_uid" value="{$userinfo.id}">
+			<input type="hidden" name="belong_did" value="{$userinfo.did}">
+        </td>
+        <td class="layui-td-gray">所属部門</td>
+        <td>
+          <input type="text" name="belong_department" value="{$userinfo.department}" autocomplete="off" readonly class="layui-input">
+        </td>
+		<td class="layui-td-gray">共有社員</td>
+        <td>
+			<input type="text" name="share_names" autocomplete="off" readonly placeholder="共有社員を選択してください" class="layui-input picker-more">
+			<input type="hidden" name="share_ids">
+        </td>
+      </tr>
+	  {/eq}
+	  <tr>
+		<td class="layui-td-gray" style="vertical-align:top">顧客紹介<font>*</font></td>
+        <td colspan="5">
+          <textarea name="content" placeholder="顧客紹介を入力してください" lay-verify="required" lay-reqText="顧客紹介を入力してください" class="layui-textarea"></textarea>
+        </td>
+      </tr>
+	  <tr>
+		<td class="layui-td-gray" style="vertical-align:top">運営事業</td>
+        <td colspan="5">
+          <textarea name="market" placeholder="運営事業を入力してください" class="layui-textarea"></textarea>
+        </td>
+      </tr>
+	  <tr>
+      <td colspan="6"><strong>主要連絡先情報</strong></td>
+	  </tr>
+	  <tr>
+        <td class="layui-td-gray">連絡先<font>*</font></td>
+        <td>
+          <input type="text" name="c_name" autocomplete="off" lay-verify="required" lay-reqText="連絡先の名前を入力してください" placeholder="連絡先の名前を入力してください" class="layui-input">
+        </td>
+		<td class="layui-td-gray">連絡先電話番号<font>*</font></td>
+        <td>
+			<input type="text" name="c_mobile" autocomplete="off" lay-verify="required|mobile" lay-reqText="連絡先の電話番号を入力してください" placeholder="連絡先の電話番号を入力してください" class="layui-input">
+        </td>
+		<td class="layui-td-gray">性別<font>*</font></td>
+        <td>
+			<input type="radio" name="c_sex" value="1" title="男">
+			<input type="radio" name="c_sex" value="2" title="女" >
+        </td>
+	  </tr>
+	  <tr>
+		<td class="layui-td-gray">WeChat番号</td>
+        <td>
+			<input type="text" name="c_wechat" autocomplete="off" placeholder="連絡先のWeChat番号を入力してください" class="layui-input">
+        </td>
+		<td class="layui-td-gray">QQ番号</td>
+        <td>
+			<input type="text" name="c_qq" autocomplete="off" placeholder="連絡先のQQ番号を入力してください" class="layui-input">
+        </td>
+		<td class="layui-td-gray">電子メール</td>
+        <td>
+			<input type="text" name="c_email" autocomplete="off" placeholder="連絡先の電子メールを入力してください" class="layui-input">
+        </td>
+      </tr>
+	   <tr>
+		<td colspan="6"><strong>備考情報</strong></td>
+	  </tr>
+      <tr>
+        <td colspan="6">
+          <textarea name="remark" placeholder="備考情報を入力してください" class="layui-textarea"></textarea>
+        </td>
+      </tr>
+    </table>
+    <div class="py-3">
+	   <input type="hidden" name="scene" value="add">
+      <button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">確定</button>
+      <button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+    </div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool','employeepicker'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool,employeepicker = layui.employeepicker;
+		
+		//选择归属人人弹窗	
+		$('body').on('click','[name="belong_name"]',function () {
+			var ids=$('[name="belong_uid"]').val(),names=$('[name="belong_name"]').val();
+			employeepicker.init({
+				ids:ids,
+				names:names,
+				type:0,
+				department_url: "/api/index/get_department_tree",
+				employee_url: "/api/index/get_employee",
+				callback:function(ids,names,dids,departments){
+					$('[name="belong_uid"]').val(ids);
+					$('[name="belong_name"]').val(names);
+					$('[name="belong_did"]').val(dids);
+					$('#department_name').html(departments);
+				}
+			});
+		});	
+	
+		//监听提交
+		form.on('submit(webform)', function (data) {
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose(1000);
+				}
+			}
+			if(!data.field.c_sex){
+				layer.msg('主要連絡先の性別');
+				return false;
+			}
+			tool.post("/customer/index/add", data.field, callback);
+			return false;
+		});
+
+	}
+</script>
+{/block}
+<!-- /脚本 -->

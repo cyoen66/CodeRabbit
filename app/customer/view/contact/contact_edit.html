@@ -1,0 +1,99 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">連絡先編集</h3>
+    <table class="layui-table layui-table-form">
+      <tr>
+        <td class="layui-td-gray">顧客会社名</td>
+        <td colspan="5">{$detail.customer}</td>
+      </tr>
+      <tr>
+        <td class="layui-td-gray">担当者氏名<font>*</font></td>
+        <td>
+          <input type="text" name="name" value="{$detail.name}" autocomplete="off" lay-verify="required" lay-reqText="担当者氏名を入力してください" placeholder="担当者氏名を入力してください" class="layui-input">
+        </td>
+		<td class="layui-td-gray">電話番号<font>*</font></td>
+        <td>
+			<input type="text" name="mobile" value="{$detail.mobile}" autocomplete="off" lay-verify="required" lay-reqText="電話番号を入力してください" placeholder="電話番号を入力してください" class="layui-input">
+        </td>
+		<td class="layui-td-gray">性別<font>*</font></td>
+        <td>
+			<input type="radio" name="sex" value="1" title="男" {eq name="$detail.sex" value="1"} checked{/eq}>
+			<input type="radio" name="sex" value="2" title="女" {eq name="$detail.sex" value="2"} checked{/eq}>
+        </td>
+	  </tr>
+	  <tr>
+		<td class="layui-td-gray">微 信 号</td>
+        <td>
+			<input type="text" name="wechat" value="{$detail.wechat}" autocomplete="off" placeholder="请输入联系人微信号" class="layui-input">
+        </td>
+		<td class="layui-td-gray">QQ号码</td>
+        <td>
+			<input type="text" name="qq" value="{$detail.qq}" autocomplete="off" placeholder="请输入联系人QQ号码" class="layui-input">
+        </td>
+		<td class="layui-td-gray">メールアドレス</td>
+        <td>
+			<input type="text" name="email" value="{$detail.email}" autocomplete="off" placeholder="メールアドレスを入力してください" class="layui-input">
+        </td>
+      </tr>
+	  <tr>
+		<td class="layui-td-gray">担当者氏名読み方</td>
+        <td>
+			<input type="text" name="nickname" value="{$detail.nickname}" autocomplete="off" placeholder="担当者氏名読み方を入力してください" class="layui-input">
+        </td>
+		<td class="layui-td-gray">部門</td>
+        <td>
+			<input type="text" name="department" value="{$detail.department}" autocomplete="off" placeholder="所属部門を入力してください" class="layui-input">
+        </td>
+		<td class="layui-td-gray">役職</td>
+        <td>
+			<input type="text" name="position" value="{$detail.position}" autocomplete="off" placeholder="役職を入力してください" class="layui-input">
+        </td>
+      </tr>
+    </table>
+    <div class="py-3">
+	   <input type="hidden" name="id" value="{$detail.id}">
+      <button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">確定</button>
+      <button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+    </div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool,laydate = layui.laydate;
+		laydate.render({
+			elem: '#follow_time'
+			,type: 'datetime'
+		});
+		laydate.render({
+			elem: '#next_time'
+			,min: 0
+			,type: 'datetime'
+		});
+		//监听提交
+		form.on('submit(webform)', function (data) {
+			if(!data.field.sex){
+				layer.msg('性別を選択してください');
+				return false;
+			}
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose();
+					parent.layui.contactTable.reload();
+				}
+			}
+			tool.post("/customer/contact/contact_add", data.field, callback);
+			return false;
+		});
+
+	}
+</script>
+{/block}
+<!-- /脚本 -->

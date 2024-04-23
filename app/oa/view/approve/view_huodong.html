@@ -1,0 +1,49 @@
+{extend name="../../base/view/common/base" /}
+{block name="style"}
+{include file="/approve/view_style" /}
+{/block}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<!-- 開発 #5　xie -->
+	<h3 class="pb-3">催事経費申請</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">活動名</td>
+			<td>{$detail.name}</td>
+			<td class="layui-td-gray">予算</td>
+			<td>{$detail.amount}</td>
+			<td class="layui-td-gray">活動日</td>
+			<td>{$detail.start_time} から {$detail.end_time} まで</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">活動説明</td>
+			<td colspan="5">{$detail.content}</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">備考</td>
+			<td colspan="5">{$detail.remark}</td>
+		</tr>
+		{notempty name="$detail.file_ids"}
+		<tr>
+			<td class="layui-td-gray">関連添付</td>
+			<td colspan="5" style="line-height:inherit">
+				<div class="layui-row">
+					{volist name="$detail.fileArray" id="vo"}
+					<div class="layui-col-md4" id="uploadImg{$vo.id}">{:file_card($vo,'view')}</div>
+					{/volist}
+				</div>
+			</td>
+		</tr>
+		{/notempty}
+	</table>	
+	{include file="/approve/view_step" /}
+</div>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+{include file="/approve/view_script" /}
+{/block}
+<!-- /脚本 -->

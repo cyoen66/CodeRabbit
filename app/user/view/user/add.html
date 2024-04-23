@@ -1,0 +1,248 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	{if condition="$id eq 0"}
+	<h3 class="pb-3">社員追加</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">名前<font>*</font></td>
+			<td>
+				<input type="text" name="name" lay-verify="required" placeholder="社員の名前を入力してください" lay-reqText="社員の名前を入力してください" autocomplete="off" class="layui-input">
+			</td>
+			<td class="layui-td-gray">性別<font>*</font></td>
+			<td>
+				<input type="radio" name="sex" value="1" title="男">
+				<input type="radio" name="sex" value="2" title="女">
+			</td>
+			<td class="layui-td-gray" style="width: 100px;">パスワード</td>
+			<td>
+				{$reg_pwd}
+				<input type="hidden" name="reg_pwd" value="{$reg_pwd}" lay-verify="required">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">電話番号<font>*</font></td>
+			<td>
+				<input type="text" name="mobile" lay-verify="required" placeholder="電話番号を入力してください" lay-reqText="電話番号を入力してください" autocomplete="off" class="layui-input">
+			</td>
+			<td class="layui-td-gray" style="width: 120px;">メールアドレス<font>*</font></td>
+			<td>
+				<input type="text" name="email" lay-verify="required" placeholder="メールアドレスを入力してください" lay-reqText="メールアドレスを入力してください" autocomplete="off" class="layui-input">
+			</td>
+			<td rowspan="3" class="layui-td-gray">写真<br /><span style="font-size: 12px;">(アップロードしない場合システムは自動的にそれを生成します)</span></td>
+			<td rowspan="3" valign="top" style="width: 100px;">
+				<div class="layui-upload" style="width: 100px;">
+					<div class="layui-upload-list" id="demo1" style="width: 100%; height:100px; overflow: hidden;">
+						<img src="/static/home/images/nonepic600x600.jpg" height="100" style="max-width: 100%; width: 100%;" />
+						<input type="hidden" name="thumb" value="">
+					</div>
+					<button type="button" class="layui-btn layui-btn-normal" style="width: 100%;" id="test1">アプロード</button>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">所属部門<font>*</font></td>
+			<td>
+				<select name="did" lay-verify="required" lay-reqText="所属部門を選んでください">
+					<option value="">所属部門を選んでください</option>
+					{volist name="department" id="v"}
+						<option value="{$v.id}">{$v.title}</option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray">役職<font>*</font></td>
+			<td>
+				<select name="position_id" lay-verify="required" lay-reqText="役職を選んでください">
+					<option value="">役職を選んでください</option>
+					{volist name="position" id="v"}
+						<option value="{$v.id}">{$v.title}</option>
+					{/volist}
+				</select>				
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">社員種類<font>*</font></td>
+			<td>
+				<input type="radio" name="type" value="3" title="契約社員">
+				<input type="radio" name="type" value="2" title="個人事業主">
+				<input type="radio" name="type" value="1" title="正社員">
+			</td>
+			<td class="layui-td-gray">入職日<font>*</font></td>
+			<td>
+				<input type="text" id="entry_time" name="entry_time" readonly lay-verify="required" placeholder="入職日を選んでください" lay-reqText="入職日を選んでください" autocomplete="off" class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">社員状態</td>
+			<td >
+				<input type="radio" name="status" value="0" title="無効">
+				<input type="radio" name="status" value="1" title="有効" checked>
+				<input type="radio" name="status" value="2" title="退職">
+			</td>
+			<td class="layui-td-gray">有休日<font>*</font></td>
+			<td>
+				<input type="text" id="annual_leave" name="annual_leave" lay-verify="required" autocomplete="off" class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">社員プロフィール</td>
+			<td colspan="7">
+				<textarea name="desc" placeholder="社員プロフィールを入力してください" class="layui-textarea"></textarea>
+			</td>
+		</tr>
+	</table>
+	{else/}
+	<h3 class="pb-3">変更</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">名前<font>*</font></td>
+			<td>
+				<input type="text" name="name" value="{$detail.name}" lay-verify="required" placeholder="社員の名前を入力してください" lay-reqText="社員の名前を入力してください" autocomplete="off" class="layui-input">
+			</td>
+			<td class="layui-td-gray">ログインID</td>
+			<td>
+				{$detail.username}
+			</td>
+			<td class="layui-td-gray">パスワード</td>
+			<td>
+				{empty name="$detail.reg_pwd"}
+				パスワードがリセットされました
+				{else/}
+					{$detail.reg_pwd}
+				{/empty}
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">電話番号<font>*</font></td>
+			<td>
+				<input type="text" name="mobile" value="{$detail.mobile}" lay-verify="required" placeholder="電話番号でログインすることが可能です" lay-reqText="電話番号を入力してください" autocomplete="off" class="layui-input">
+			</td>
+			<td class="layui-td-gray">メールアドレス<font>*</font></td>
+			<td>
+				<input type="text" name="email" value="{$detail.email}" lay-verify="required" placeholder="メールアドレスを入力してください" lay-reqText="メールアドレスを入力してください" autocomplete="off" class="layui-input">
+			</td>
+			<td rowspan="3" class="layui-td-gray">写真<br /><span style="font-size: 12px;">(アップロードしない場合システムは自動的にそれを生成します)</span></td>
+			<td rowspan="3" valign="top" style="width: 120px;">
+				<div class="layui-upload" style="width: 120px;">
+					<div class="layui-upload-list" id="demo1" style="width: 100%; height:100px; overflow: hidden;">
+						<img src="{$detail.thumb}" height="100" style="max-width: 100%; width: 100%;" />
+						<input type="hidden" name="thumb" value="{$detail.thumb}">
+					</div>
+					<button type="button" class="layui-btn layui-btn-normal" style="width: 100%;" id="test1">アプロード</button>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">所属部門<font>*</font></td>
+			<td>
+				<select name="did" lay-verify="required" lay-reqText="所属部門を選んでください">
+					<option value="">所属部門を選んでください</option>
+					{volist name="department" id="v"}
+						<option value="{$v.id}" {eq name="$v.id" value="$detail.did"}selected{/eq}>{$v.title}</option>
+					{/volist}
+				</select>
+			</td>
+			<td class="layui-td-gray">役職<font>*</font></td>
+			<td>
+				<select name="position_id" lay-verify="required" lay-reqText="役職を選んでください">
+					<option value="">役職を選んでください</option>
+					{volist name="position" id="v"}
+						<option value="{$v.id}" {eq name="$v.id" value="$detail.position_id"}selected{/eq}>{$v.title}</option>
+					{/volist}
+				</select>				
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">入職日<font>*</font></td>
+			<td>
+				<input type="text" id="entry_time" value="{$detail.entry_time|time_format=###,'Y-m-d'}" name="entry_time" readonly lay-verify="required" placeholder="入職日を選んでください" lay-reqText="入職日を選んでください" autocomplete="off" class="layui-input">
+			</td>
+			<td class="layui-td-gray">社員種類<font>*</font></td>
+			<td>
+				<input type="radio" name="type" value="3" title="契約社員" {eq name="$detail.type" value="3"}checked{/eq}>
+				<input type="radio" name="type" value="2" title="個人事業主" {eq name="$detail.type" value="2"}checked{/eq}>
+				<input type="radio" name="type" value="1" title="正社員" {eq name="$detail.type" value="1"}checked{/eq}>
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray">状態</td>
+			<td>
+				{eq name="$detail.status" value="0"}<span style="color:#FF5722">無効</span>{/eq}
+				{eq name="$detail.status" value="1"}<span style="color:#009688">有効</span>{/eq}
+				{eq name="$detail.status" value="2"}<span style="color:#FFB800">退職</span>{/eq}
+			</td>
+			<td class="layui-td-gray">性別<font>*</font></td>
+			<td >
+				<input type="radio" name="sex" value="1" title="男" {eq name="$detail.sex" value="1"}checked{/eq}>
+				<input type="radio" name="sex" value="2" title="女" {eq name="$detail.sex" value="2"}checked{/eq}>
+			</td>
+			<td class="layui-td-gray">有休残<font>*</font></td>
+			<td >
+				<input type="text" id="annual_leave" name="annual_leave" lay-verify="required" value="{$detail.annual_leave}" autocomplete="off" class="layui-input">
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray"  style="width: 120px;">社員プロフィール</td>
+			<td colspan="7">
+				<textarea name="desc" placeholder="社員プロフィールを入力してください" class="layui-textarea">{$detail.desc|default=''}</textarea>
+			</td>
+		</tr>
+	</table>
+	{/if}
+
+	<div class="py-3">
+		<input type="hidden" value="{$id}" name="id">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form,tool=layui.tool,laydate = layui.laydate,upload = layui.upload;
+		//日付選択
+		laydate.render({
+			elem: '#entry_time',
+			max:7,
+			showBottom: false
+		});
+		//写真をアップロード
+		var uploadInst = upload.render({
+			elem: "#test1",
+			url: "/api/index/upload",
+			done: function (res) {
+				layer.msg(res.msg);
+				if (res.code == 0) {
+					//アプロード成功
+					$('#demo1 input').attr('value', res.data.filepath);
+					$('#demo1 img').attr('src', res.data.filepath);
+				}
+			}
+		});
+
+		//コミットをリッスンする
+		form.on('submit(webform)', function(data){
+			if(!data.field.sex){
+				layer.msg('社員の性別を選んでください');
+				return false;
+			}
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose(1000);
+				}
+			}
+			tool.post("/user/user/add", data.field, callback);
+			return false;
+		});
+	}
+
+</script>
+{/block}
+<!-- /脚本 -->

@@ -1,0 +1,151 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+	<form class="layui-form gg-form-bar border-x border-t">
+		<div class="layui-input-inline" style="width:150px;">
+			<select name="cate_id">
+				<option value="">契約類型を選択してください</option>
+				{volist name=":contract_cate()" id="v"}
+				<option value="{$v.id}">{$v.title}</option>
+				{/volist}
+			</select>
+		</div>
+		<div class="layui-input-inline" style="width:150px;">
+			<select name="type">
+				<option value="">契約性質を選択してください</option>
+				<option value="1">通常契約</option>
+				<option value="2">フレーム契約</option>
+				<option value="3">追加協定</option>
+				<option value="4">他の契約</option>
+			</select>
+		</div>
+		<div class="layui-input-inline" style="width:240px;">
+			<input type="text" name="keywords" placeholder="キーワードを入力してください" class="layui-input" autocomplete="off" />
+		</div>
+		<div class="layui-input-inline" style="width:180px;">
+			<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform"><i class="layui-icon layui-icon-search mr-1"></i>検索</button>
+			<button type="reset" class="layui-btn layui-btn-reset" lay-filter="reset">クリア</button>
+		</div>
+	</form>
+	<table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool ,form = layui.form;
+		layui.pageTable = table.render({
+			elem: '#test',
+			title: '契約アーカイブリスト',
+			url: "/contract/index/archive", //数据接口
+			cellMinWidth: 80,
+			page: true, //开启分页
+			limit: 20,
+			cols: [
+				[ //表头
+					{
+						field: 'id',
+						title: '番号',
+						align: 'center',
+						width: 80
+					},{ field: 'check_status', title: 'ステータス', align: 'center', width: 100, templet: function (d) {
+						var html = '<span class="layui-btn layui-btn-xs layui-bg-' + d.check_status + '">' + d.status_name + '</span>';
+						return html;
+						}
+					},{
+						field: 'code',
+						title: '契約番号',
+						width: 160
+					},{
+						field: 'name',
+						title: '契約名称',
+						minWidth:240,
+						templet: '<div><a data-href="/contract/index/view/id/{{d.id}}.html" class="side-a">{{d.name}}</a></div>'
+					}, {
+						field: 'cate_title',
+						title: '契約類型',
+						align: 'center',
+						width: 100
+					}, {
+						field: 'type_name',
+						title: '契約性質',
+						align: 'center',
+						width: 80,
+						templet: function (d) {
+							var html = '<span class="layui-color-' + d.type + '">' + d.type_name + '</span>';
+							return html;
+						}
+					},{
+						field: 'cost',
+						title: '契約金額/円',
+						align: 'right',
+						width: 100
+					}, {
+						field: 'sign_name',
+						title: 'サイン者',
+						align: 'center',
+						width: 80
+					},{
+						field: 'keeper_name',
+						title: '保管者',
+						align: 'center',
+						width: 80
+					}, {
+						field: 'sign_time',
+						title: 'サイン時間',
+						align: 'center',
+						width: 100
+					}, {
+						field: 'right',
+						fixed:'right',
+						title: '操作',
+						width: 100,
+						align: 'center',
+						templet: function (d) {
+							return '<span class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">表示</span>';
+						}
+					}
+				]
+			]
+		});
+		
+		//表头工具栏事件
+		table.on('toolbar(test)', function(obj){
+			if (obj.event === 'add') {
+				selectType();
+				return;
+			}
+		});
+		//监听行工具事件
+		table.on('tool(test)', function(obj) {
+			var data = obj.data;
+			if(obj.event === 'view'){
+				tool.side('/contract/index/view?id='+data.id);
+				return;
+			}
+		});
+		
+
+		//监听搜索提交
+		form.on('submit(webform)', function(data) {
+			layui.pageTable.reload({
+				where: {
+					keywords: data.field.keywords,
+					cate_id: data.field.cate_id,
+					type: data.field.type
+				},
+				page: {
+					curr: 1
+				}
+			});
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->

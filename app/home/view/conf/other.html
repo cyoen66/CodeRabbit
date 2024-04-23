@@ -1,0 +1,61 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+    <h3 class="pb-3">その他の設定</h3>
+    <table class="layui-table layui-table-form">
+        <tr>
+            <td class="layui-td-gray-4">システムテーマ</td>
+            <td>
+                {empty name="$config.theme"}
+                    <input type="radio" name="theme" value="black" title="black" checked>
+                    <input type="radio" name="theme" value="white" title="white" >
+                {else/}
+                    <input type="radio" name="theme" value="black" title="black" {eq name="$config.theme" value="black"}checked{/eq}>
+                    <input type="radio" name="theme" value="white" title="white" {eq name="$config.theme" value="white"}checked{/eq}>
+                {/empty}				
+            </td>
+            <td class="layui-td-gray">開発者</td>
+            <td>
+                <input type="hidden" value="{$id}" name="id">
+                <input type="text" name="author" autocomplete="off" placeholder="開発者名を入力してください" lay-reqText="開発者名を入力してください"
+                    class="layui-input" {notempty name="$config.author" } value="{$config.author}" {/notempty}>
+            </td>
+            <td class="layui-td-gray-3">バージョン番号
+            </td>
+            <td>
+                <input type="text" name="version" autocomplete="off" placeholder="バージョン番号を入力してください" lay-reqText="バージョン番号を入力してください"
+                    class="layui-input" {notempty name="$config.version" } value="{$config.version}" {/notempty}>
+            </td>
+        </tr>
+    </table>
+
+    <div class="py-3">
+        <button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">保存</button>
+        <button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+    </div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+    const moduleInit = ['tool'];
+    function gouguInit() {
+        var form = layui.form, tool = layui.tool;
+        //监听提交
+        form.on('submit(webform)', function (data) {
+            let callback = function (e) {
+                layer.msg(e.msg);
+                if (e.code == 0) {
+                    tool.sideClose(1000);
+                }
+            }
+            tool.post("/home/conf/edit", data.field, callback);
+            return false;
+        });
+    }
+</script>
+{/block}
+<!-- /脚本 -->

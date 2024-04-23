@@ -1,0 +1,102 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+    <table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+  	<button class="layui-btn layui-btn-sm addNew" type="button">+ 承認種類追加</button>
+  </div>
+</script>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var table = layui.table, tool = layui.tool;
+		layui.pageTable = table.render({
+			elem: '#test'
+			,toolbar: '#toolbarDemo'
+			,defaultToolbar: false
+			,title:'承認モジュールリスト'
+			,url: "/home/cate/flow_type"
+			,page: false
+			,cellMinWidth: 80
+			,cols: [[
+				{field:'id',width:80, title: 'ID番号', align:'center'}
+				,{field:'title',title: '名称',width:120}
+				,{field:'department',title: '適用部門'}
+				,{field:'name',title: '識別子',width:150}
+				,{field:'icon',title: 'アイコン',width:220,templet: function(d){
+					var html='<strong class="iconfont '+d.icon+'"></strong> '+d.icon;
+					return html;
+				}}
+				,{field:'type_name', title: '種類',width:90,align:'center'}
+				,{field:'status', title: 'ステータス',width:100,align:'center',templet: function(d){
+					var html1='<span class="green">正常</span>';
+					var html2='<span class="yellow">無効</span>';
+					if(d.status==1){
+						return html1;
+					}
+					else{
+						return html2;
+					}
+				}}
+				,{width:100,title: '操作', align:'center',templet: function(d){
+					var html='';
+					var btn='<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">編集</a>';
+					var btn1='<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="disable">無効</a>';
+					var btn2='<a class="layui-btn layui-btn-xs" lay-event="open">有効化</a>';
+					if(d.status==1){
+						html = '<div class="layui-btn-group">'+btn+btn1+'</div>';
+					}
+					else{
+						html = '<div class="layui-btn-group">'+btn+btn2+'</div>';
+					}
+					return html;
+				}}
+			]]
+		});
+			
+		table.on('tool(test)',function (obj) {
+			if(obj.event === 'edit'){
+				tool.side("/home/cate/flow_type_add?id="+obj.data.id);
+			}
+			if(obj.event === 'disable'){
+				layer.confirm('このモジュールを無効しますか？', {icon: 3, title:'ヒント'}, function(index){
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							layui.pageTable.reload();
+						}
+					}
+					tool.post("/home/cate/flow_type_check", { id: obj.data.id,status: 0}, callback);
+					layer.close(index);
+				});
+			}
+			if(obj.event === 'open'){
+				layer.confirm('このモジュールを有効化しますか？', {icon: 3, title:'ヒント'}, function(index){
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if (e.code == 0) {
+							layui.pageTable.reload();
+						}
+					}
+					tool.post("/home/cate/flow_type_check", { id: obj.data.id,status: 1}, callback);
+					layer.close(index);
+				});
+			}
+		});
+		
+		$('body').on('click','.addNew',function(){
+			tool.side("/home/cate/flow_type_add");
+			return false;
+		});		
+	}
+</script>
+{/block}
+<!-- /脚本 -->

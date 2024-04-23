@@ -1,0 +1,99 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<div class="p-3">
+  <div class="gg-form-bar border-t border-x" style="padding-bottom: 12px">
+    <button class="layui-btn layui-btn-sm add-menu">+ 部門追加</button>
+  </div>
+  <div>
+    <table class="layui-hide" id="treeTable" lay-filter="treeTable"></table>
+  </div>
+</div>
+{/block}
+<!-- /主体 -->
+
+<!-- 脚本 -->
+{block name="script"}
+<script>
+  const moduleInit = ["tool"];
+  function gouguInit() {
+    var treeTable = layui.treeTable,
+      tool = layui.tool;
+
+    layui.pageTable = treeTable.render({
+      elem: "#treeTable",
+      id: "treeTable",
+      url: "/user/department/index",
+      tree: {
+        // treeTable 特定属性集
+        customName: { name: "title" },
+        data: {},
+        view: { showIcon: false },
+        async: {},
+        callback: {},
+      },
+      done: function () {
+        treeTable.expandAll("treeTable", true); // 关闭全部节点
+      },
+      cols: [
+        [
+          { field: "title", title: "部門名称" },
+          { field: "sort", title: "表示順", width: 80, align: "center" },
+          { field: "leader", title: "部門長", width: 120, align: "center" },
+          { field: "phone", title: "連絡先", width: 160 },
+          {
+            width: 180,
+            title: "操作",
+            align: "center",
+            templet: function (d) {
+              var html =
+                '<span class="layui-btn-group"><button class="layui-btn layui-btn-xs" lay-event="add">下位部門追加</button><button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">変更</button><button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">削除</button></span>';
+              return html;
+            },
+          },
+        ],
+      ],
+      page: false,
+    });
+
+    //表头工具栏事件
+    $("body").on("click", ".add-menu", function () {
+      tool.side("/user/department/add");
+      return;
+    });
+
+    //操作按钮
+    treeTable.on("tool(treeTable)", function (obj) {
+      if (obj.event === "add") {
+        tool.side("/user/department/add?pid=" + obj.data.id);
+        return;
+      }
+      if (obj.event === "edit") {
+        tool.side("/user/department/add?id=" + obj.data.id);
+        return;
+      }
+      if (obj.event === "del") {
+        layer.confirm(
+          "削除しますか?",
+          { icon: 3, title: "提示" },
+          function (index) {
+            let callback = function (e) {
+              layer.msg(e.msg);
+              if (e.code == 0) {
+                obj.del();
+              }
+            };
+            tool.delete(
+              "/user/department/delete",
+              { id: obj.data.id },
+              callback
+            );
+            layer.close(index);
+          }
+        );
+      }
+    });
+  }
+</script>
+{/block}
+<!-- /脚本 -->

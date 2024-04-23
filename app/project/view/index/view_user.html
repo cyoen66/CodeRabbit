@@ -1,0 +1,114 @@
+<div class="p-3 bg-white">
+	<table class="layui-hide" id="user" lay-filter="user"></table>
+</div>
+<script type="text/html" id="toolbaruser">
+  <div class="layui-btn-container">
+  	<button class="layui-btn layui-btn-sm" lay-event="add">+ 新規プロジェクトメンバー</button>
+  </div>
+</script>
+<script>
+function project_user(){
+	if($('#projectTab').find('li').eq(4).data('load') =='true'){
+		return false;
+	}
+	$('#projectTab').find('li').eq(4).data('load','true');
+	let tool = layui.tool, table = layui.table,employeepicker=layui.employeepicker;
+	//プロジェクトのメンバー
+	layui.userTable = table.render({
+		elem: '#user',
+		title: 'プロジェクトメンバーリスト',
+		cellMinWidth: 80,
+		toolbar: '#toolbaruser',
+		url: "/project/api/project_user", //データインターフェース
+		where: { 'tid': project_id },
+		page: false, //ページネーションを有効にする
+		limit: 20,
+		cols: [[ //テーブルヘッダー
+			{ field: 'name', fixed: 'left', title: 'メンバー名前', width: 110, align: 'center', rowspan: 2 }
+			, { field: 'create_time', title: '参加日付', width: 110, align: 'center', rowspan: 2 }
+			, { field: 'role', title: '役割', align: 'center', width: 90, rowspan: 2, templet: function (d) {
+				var html='<span style="color: #4285F4;">一般メンバー</span>';
+				if(d.role==1){
+					html='<span style="color: #EE6666;">プロジェクト作成者</span>';
+				}
+				if(d.role==2){
+					html='<span style="color: #91CC75;">プロジェクト責任者</span>';
+				}
+				return html;
+			}}
+			, { field: 'position', title: '役職', align: 'center', width: 80, rowspan: 2 }
+			, { field: 'department', title: '所属部門', align: 'center', width: 120, rowspan: 2 }
+			, { field: 'mobile', title: '電話番号', align: 'center', width: 110, rowspan: 2 }
+			, { field: 'email', title: 'メールアドレス', align: 'center', width: 120, rowspan: 2 }
+			, { align: 'center', title: '作業記録', colspan: 2 }
+			, { align: 'center', title: 'タスク', colspan: 3 }
+			, { field: 'delete_time', title: '除外日付', align: 'center', width: 110, rowspan: 2 }
+			, { field: 'status',fixed: 'right', title: '状態', align: 'center', width: 60, rowspan: 2, templet: function (d) {
+					var html = '<span style="color:#EE6666">✘</span>';
+					if(d.delete_time == '-')
+						html = '<span style="color:#91CC75">✔</span>';
+					return html;
+				}}				
+			, {title: '操作',fixed: 'right', align: 'center', width: 60, rowspan: 2, templet: function (d) {
+					var html = '<span class="layui-btn layui-btn-xs" lay-event="recover">復元</span>';
+					if(d.delete_time == '-')
+						html = '<span class="layui-btn layui-btn-danger layui-btn-xs" lay-event="remove">除外</span>';
+					return html;
+				}
+			}
+		], [
+			{ field: 'schedules', align: 'center', style: 'color: #91CC75;', width: 72, 'title': '記録' }
+			, { field: 'labor_times', align: 'center', style: 'color: #4285F4;', width: 70, 'title': '工時' }
+			, { field: 'tasks_unfinish', align: 'center', style: 'color: #91CC75;', width: 72, 'title': '進行中' }
+			, { field: 'tasks_finish', align: 'center', style: 'color: #FAC858;', width: 70, 'title': '完了' }
+			, { field: 'tasks_pensent', align: 'center', style: 'color: #EE6666;', width: 72, 'title': '完了率' }
+		]]
+	});
+	
+	//イベントをトリガーする
+	table.on('toolbar(user)', function(obj){
+		var checkStatus = table.checkStatus(obj.config.id);
+		switch(obj.event){
+			case 'add':
+				employeepicker.init({
+				type: 0,
+				department_url: "/api/index/get_department_tree",
+				employee_url: "/api/index/get_employee",
+				callback: function (ids, names, dids, departments) {
+					let callback = function (e) {
+						layer.msg(e.msg);
+						if(e.code == 0){
+							layui.userTable.reload();
+						}						
+					}
+					tool.post("/project/api/add_user", {uid: ids,project_id: project_id}, callback);
+				}
+			})			
+			break;
+		};
+	});
+
+	//行ツールイベントを監視する
+	table.on('tool(user)', function (obj) {
+		let postData = { "id": obj.data.id };
+		let callback = function (e) {
+				layer.closeAll();
+				layer.msg(e.msg);
+				if(e.code == 0){
+					layui.userTable.reload();
+				}
+			}
+		if (obj.event === 'remove') {
+			layer.confirm('このプロジェクトメンバーを除外しますか?', { icon: 3, title: 'ヒント' }, function (index) {
+				tool.delete("/project/api/remove_user", postData, callback);
+			});
+		}
+		if (obj.event === 'recover') {
+			layer.confirm('このプロジェクトメンバーを復元しますか?', { icon: 3, title: 'ヒント' }, function (index) {
+				tool.post("/project/api/recover_user", postData, callback);
+			});
+		}
+		return;
+	});
+}
+</script>

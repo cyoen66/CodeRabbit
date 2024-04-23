@@ -1,0 +1,85 @@
+<div class="p-3 bg-white">
+<table class="layui-hide" id="scheduleApi" lay-filter="schedule"></table>
+</div>
+<script>
+function project_schedule(){
+	if($('#projectTab').find('li').eq(2).data('load') =='true'){
+		return false;
+	}
+	$('#projectTab').find('li').eq(2).data('load','true');
+	let form = layui.form,tool = layui.tool,table = layui.table,work = layui.oaSchedule,employeepicker=layui.employeepicker;
+	//プロジェクトの作業記録
+	layui.scheduleTable = table.render({
+		elem: '#scheduleApi',
+		title: '作業記録リスト',
+		cellMinWidth: 80,
+		url: "/oa/schedule/index", //データインターフェース
+		where: { 'tid': project_id },
+		page: true, //ページネーションを有効にする
+		limit: 20,
+		cols: [[ //テーブルヘッダー
+			{ field: 'id', title: '連番', width: 60, align: 'center' }
+			, {
+				field: 'start_time', title: '作業時間範囲', align: 'center', width: 180, templet: function (d) {
+					var html = d.start_time + ' 〜 ' + d.end_time;
+					return html;
+				}
+			}
+			, { field: 'labor_time', title: '作業時間', style: 'color: #91CC75;', align: 'center', width: 60 }
+			, { field: 'labor_type_string', title: '作業類型', align: 'center', width: 90,templet:function(d){
+				var html = '<span class="layui-color-'+d.labor_type+'">'+d.labor_type_string+'</span>';
+				return html;
+			}}
+			, { field: 'work_cate', title: '作業カテゴリ', align: 'center', width: 100 }
+			, { field: 'title', title: '作業内容' }
+			, { field: 'name', title: '実行従業員', align: 'center', width: 80 }
+			, { field: 'department', title: '所属部署', align: 'center', width: 100 }
+			, { field: 'create_time', title: '記録時間', align: 'center', width: 150 }
+			, {title: '操作',fixed:'right', align: 'center', width: 100, templet: function (d) {
+					return '<div class="layui-btn-group"><span class="layui-btn layui-btn-xs" lay-event="edit">編集</span><span class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">詳細</span></div>';
+				}
+			}
+		]]
+	});
+	
+	// 従業員を選択
+	$('.gg-form-bar').on('click', '[data-event="select"]', function () {
+		var that = $(this);
+		var names = that.val(), ids = $('[name="uid"]').val();
+		employeepicker.init({
+			ids: ids,
+			names: names,
+			type: 0,
+			department_url: "/api/index/get_department_tree",
+			employee_url: "/api/index/get_employee",
+			callback: function (ids, names, dids, departments) {
+				$('[name="uid"]').val(ids);
+				that.val(names);
+				$('[lay-filter="webform"]').click();
+			}
+		})
+	});
+	
+	//検索のサブミットを監視する
+	form.on('submit(webform)', function (data) {
+		let f = data.field;
+		layui.scheduleTable.reload({ where: { keywords: f.keywords, uid: f.uid, tid: project_id }, page: { curr: 1 } });
+		return false;
+	});
+	$('body').on('click', '[lay-filter="clear"]', function () {
+		setTimeout(function () {
+			$('[lay-filter="webform"]').click();
+		}, 10)
+	})
+	//行ツールイベントを監視する		
+	table.on('tool(schedule)', function (obj) {
+		if (obj.event === 'edit') {
+			work.add(0, obj.data);
+		}
+		if (obj.event === 'view') {
+			work.view(obj.data);
+		}
+		return false;
+	})
+}
+</script>

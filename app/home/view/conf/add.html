@@ -1,0 +1,71 @@
+{extend name="../../base/view/common/base" /}
+<!-- 主体 -->
+{block name="body"}
+<form class="layui-form p-4">
+	<h3 class="pb-3">配置項目</h3>
+	<table class="layui-table layui-table-form">
+		<tr>
+			<td class="layui-td-gray">配置名<font>*</font>
+			</td>
+			<td>
+				<input type="hidden" name="id" value="{$id}" />
+				<input type="text" name="title" lay-verify="required" autocomplete="off" placeholder="配置名を入力してください"
+					lay-reqText="配置名を入力してください" class="layui-input" {notempty name="$config.title" } value="{$config.title}"
+					{/notempty}>
+			</td>
+			<td class="layui-td-gray-2">ステータス<font>*</font>
+			</td>
+			<td>{if condition="$id eq 0"}
+				<input type="radio" name="status" value="1" title="有効" checked>
+				<input type="radio" name="status" value="0" title="無効">
+				{else/}
+				<input type="radio" name="status" value="1" title="有効" {eq name="$config.status" value="1"} checked{/eq}>
+				<input type="radio" name="status" value="0" title="無効" {eq name="$config.status" value="0"} checked{/eq}>
+				{/if}
+			</td>
+		</tr>
+		<tr>
+			<td class="layui-td-gray-2">
+				配置識別子<font>*</font>
+			</td>
+			<td colspan="3">
+				<input type="text" name="name" lay-verify="required" placeholder="配置識別子を入力してください" lay-reqText="配置識別子を入力してください"
+					autocomplete="off" class="layui-input" {notempty name="$config.name" } value="{$config.name}"
+					{/notempty}>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="4">
+				<span class="red">注意：新しい配置項目を追加した後、対応するテンプレートファイルを追加する必要があります。テンプレートファイル名は識別子と一致する必要があります。既存の配置テンプレートファイルをコピーして、必要に応じて対応するフォームを修正してください。</span>
+			</td>
+		</tr>
+	</table>
+	<div class="py-3">
+		<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="webform">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary">クリア</button>
+	</div>
+</form>
+{/block}
+<!-- /主体 -->
+
+<!-- スクリプト -->
+{block name="script"}
+<script>
+	const moduleInit = ['tool'];
+	function gouguInit() {
+		var form = layui.form, tool = layui.tool;
+		//送信を監視する
+		form.on('submit(webform)', function (data) {
+			let callback = function (e) {
+				layer.msg(e.msg);
+				if (e.code == 0) {
+					tool.sideClose(1000);
+				}
+			}
+			tool.post("/home/conf/add", data.field, callback);
+			return false;
+		});
+	}
+</script>
+{/block}
+<!-- /脚本 -->
