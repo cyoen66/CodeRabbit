@@ -58,7 +58,7 @@ class attendance extends BaseController
             , f.create_time
             , f.projectCode
             , f.check_status 
-            ,f.last_admin_id
+            f.last_admin_id
             , f.work_hours_total
             , f.work_day_total
             , f.extra_working_hours 
